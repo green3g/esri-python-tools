@@ -40,7 +40,7 @@ class Copier:
             for dataset in in_datsets:
                 from_dataset_path = '{}/{}'.format(self.from_db, dataset)
                 to_dataset_path = '{}/{}'.format(self.to_db, dataset)
-                arcpy.AddMessage('Dataset path: {}'.format(from_dataset_path))
+                arcpy.AddMessage('Creating Dataset: {}'.format(from_dataset_path))
 
                 #skip existing datasets
                 if arcpy.Exists(to_dataset_path):
@@ -55,7 +55,7 @@ class Copier:
                 for feature_class in feature_classes:
                     from_feature_path = '{}/{}'.format(from_dataset_path, feature_class)
                     to_feature_path = '{}/{}'.format(to_dataset_path, feature_class)
-                    arcpy.AddMessage('Featureclass Path: {}'.format(from_feature_path))
+                    arcpy.AddMessage('Copying Featureclass: {}'.format(from_feature_path))
                     
                     if arcpy.Exists(to_feature_path):
                         arcpy.AddMessage('Skipping feature class {} because it already exists'.format(to_feature_path))
@@ -72,7 +72,7 @@ class Copier:
                 feature_classes = arcpy.ListFeatureClasses()
                 #delete each feature class
                 for feature_class in feature_classes:
-                    arcpy.AddMessage('Removing {}'.format(feature_class))
+                    arcpy.AddMessage('Removing {}/{}'.format(env.workspace, feature_class))
                     arcpy.Delete_management('{}/{}'.format(env.workspace, feature_class))
                 #delete the dataset
                 arcpy.AddMessage('Removing {}'.format(env.workspace))

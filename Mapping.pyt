@@ -28,7 +28,7 @@ class SiteMapGenerator(object):
             datatype = 'DEFolder',
             parameterType = 'Required',
         ), arcpy.Parameter(
-            displayName = 'Buffer Distance (include units, example: 10 Feet)',
+            displayName = 'Buffer Distance (include units, example: 350 Feet)',
             name = 'buffer_dist',
             direction = 'Input',
             datatype = 'GPString',
@@ -47,8 +47,8 @@ class SiteMapGenerator(object):
             parameterType = 'Required',
         ) ]
 	params[0].value = 'parcel'
-	params[1].value = 'C:/Temp'
-	params[2].value = '100 Feet'
+	params[1].value = 'J:/'
+	params[2].value = '350 Feet'
 	params[3].filter.type = 'valueList'
 	params[3].filter.list = []
 	params[4].value = False

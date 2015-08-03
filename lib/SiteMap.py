@@ -49,15 +49,16 @@ def generate(layer = 'parcel', export_location = r'C:/Temp/',
 
     #activate export view
     current_document.activeView = 'PAGE_LAYOUT'
-
+    arcpy.FeatureClassToFeatureClass_conversion(layer, file_gdb, 'selected_{}'.format(seconds))
     #perform buffer if necessary
     if buffer_dist:
         buffer_and_select(layer, file_gdb, seconds, buffer_dist)
     
     #export the selected features
     arcpy.AddMessage('Exporting: layer={}, {}/selected_{}'.format(layer, file_gdb, seconds))
-    arcpy.FeatureClassToFeatureClass_conversion(layer, file_gdb, 'selected_{}'.format(seconds))
+    arcpy.FeatureClassToFeatureClass_conversion(layer, file_gdb, 'buffer_selected_{}'.format(seconds))
     selection = arcpy.mapping.Layer('{}/selected_{}'.format(file_gdb, seconds))
+    
     #hide the exported layer
     selection.transparency = 100
     
@@ -68,7 +69,7 @@ def generate(layer = 'parcel', export_location = r'C:/Temp/',
     data_frame.description = 'Selected Features'
     export_and_append(current_document, data_frame, export_location, final_pdf)
     
-    cursor = arcpy.da.SearchCursor('{}/selected_{}'.format(file_gdb, seconds), ['SHAPE@', '*'])
+    cursor = arcpy.da.SearchCursor('{}/buffer_selected_{}'.format(file_gdb, seconds), ['SHAPE@', '*'])
     if individual != 'false':
         for row in cursor:
             #generate the pdf
@@ -85,7 +86,7 @@ def generate(layer = 'parcel', export_location = r'C:/Temp/',
     rows = []
     for row in cursor:
         rows.append(row)
-        
+    
     #write out csv rows
     csv_writer.writerows(rows)
 
