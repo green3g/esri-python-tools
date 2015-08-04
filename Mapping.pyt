@@ -64,7 +64,7 @@ class SiteMapGenerator(object):
 			parameters[1].valueAsText,
 			parameters[2].valueAsText,
 			parameters[3].valueAsText,
-			parameters[4]))
+			parameters[4].valueAsText))
 		SiteMap.generate(
 			parameters[0].valueAsText,
 			parameters[1].valueAsText,
