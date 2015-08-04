@@ -1,10 +1,10 @@
 import arcpy
 import csv
-from datetime import datetime
 import os
+from datetime import datetime
 from Geometry import Extent
 
-def export_and_append(document, data_frame, export_location, final_pdf):
+def export_and_append(document, export_location, final_pdf):
     temp = os.path.join(export_location, 'temp.pdf')
     arcpy.AddMessage('Exporting pdf: {}'.format(document.title))
     arcpy.mapping.ExportToPDF(document, temp)
@@ -70,7 +70,7 @@ def generate(layer='parcel', export_location=r'C:/Temp/',
     data_frame.extent = Extent.expand(buffer_selected.getExtent(), 10)
     current_document.title = 'Selected Features'
     arcpy.SelectLayerByAttribute_management(layer, "CLEAR_SELECTION")
-    export_and_append(current_document, data_frame, export_location, final_pdf)
+    export_and_append(current_document, export_location, final_pdf)
 
     rows = []
     cursor = arcpy.da.SearchCursor('{}/buffer_selected_{}'.format(file_gdb, seconds), ['SHAPE@', '*'])
@@ -79,7 +79,7 @@ def generate(layer='parcel', export_location=r'C:/Temp/',
             #generate the pdf
             current_document.title = row[cursor.fields.index(title_field)]
             data_frame.extent = Extent.expand(row[0].extent, 10)
-            export_and_append(current_document, data_frame, export_location, final_pdf)
+            export_and_append(current_document, export_location, final_pdf)
         rows.append(row)
 	
 
