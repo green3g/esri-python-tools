@@ -1,6 +1,6 @@
+import arcpy
 
 __author__ = "groemhildt"
-__date__ = "$Aug 4, 2015 8:45:26 AM$"
 
 def expand(extent, percent):
     '''expands an arcpy.Extent by a given percentage'''

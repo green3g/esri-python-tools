@@ -80,7 +80,7 @@ def generate(layer='parcel', export_location=r'C:/Temp/',
             current_document.title = row[cursor.fields.index(title_field)]
             data_frame.extent = Extent.expand(row[0].extent, 10)
             export_and_append(current_document, export_location, final_pdf)
-        rows.append(row)
+            rows.append(row)
 	
 
     #write out csv rows
