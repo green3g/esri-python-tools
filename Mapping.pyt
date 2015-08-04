@@ -34,13 +34,13 @@ class SiteMapGenerator(object):
             datatype = 'GPString',
             parameterType = 'Optional',
         ), arcpy.Parameter(
-            displayName = 'Title Field (field in the dataset to use as document title)',
+            displayName = 'Title Field (field to use as optional document title)',
             name = 'title_field',
             direction = 'Input',
             datatype = 'GPString',
             parameterType = 'Required',
         ),arcpy.Parameter(
-            displayName = 'Include individual maps? Overall map will be exported automatically',
+            displayName = 'Include individual maps of selected features?',
             name = 'individual',
             direction = 'Input',
             datatype = 'GPBoolean',
