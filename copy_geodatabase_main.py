@@ -1,5 +1,4 @@
-from Geodatabase import Copier
-import arcpy
+from lib.Geodatabase import Copier
 
 def run_copy_tool(from_db, to_db, projection):
     copier = Copier(from_db, to_db)
