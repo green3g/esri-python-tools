@@ -1,8 +1,8 @@
+from Geometry import Extent
 import arcpy
 import csv
-import os
 from datetime import datetime
-from Geometry import Extent
+import os
 
 def export_and_append(document, export_location, final_pdf):
     temp = os.path.join(export_location, 'temp.pdf')
@@ -49,8 +49,6 @@ def generate(layer='parcel', export_location=r'C:/Temp/',
     arcpy.AddMessage('Exporting: layer={}, {}/selected_{}'.format(layer, file_gdb, seconds))
     arcpy.FeatureClassToFeatureClass_conversion(layer, file_gdb, 'selected_{}'.format(seconds))
     selected = arcpy.mapping.Layer('{}/selected_{}'.format(file_gdb, seconds))
-    arcpy.ApplySymbologyFromLayer_management(selected, 'N:/ArcGIS10/Layerfiles/Generic/Red_Boundary.lyr')
-    arcpy.mapping.AddLayer(data_frame, selected)
     
     #perform buffer if necessary
     buffer = None
@@ -63,6 +61,12 @@ def generate(layer='parcel', export_location=r'C:/Temp/',
     arcpy.AddMessage('Exporting: layer={}, {}/buffer_selected_{}'.format(layer, file_gdb, seconds))
     arcpy.FeatureClassToFeatureClass_conversion(layer, file_gdb, 'buffer_selected_{}'.format(seconds))
     buffer_selected = arcpy.mapping.Layer('{}/buffer_selected_{}'.format(file_gdb, seconds))
+    arcpy.ApplySymbologyFromLayer_management(buffer_selected, 'N:/ArcGIS10/Layerfiles/Generic/Gray_Boundary.lyr')
+    arcpy.mapping.AddLayer(data_frame, buffer_selected)
+    
+    #add original selection
+    arcpy.ApplySymbologyFromLayer_management(selected, 'N:/ArcGIS10/Layerfiles/Generic/Red_Boundary.lyr')
+    arcpy.mapping.AddLayer(data_frame, selected)
     
     #prep output pdf
     final_pdf = arcpy.mapping.PDFDocumentCreate(os.path.join(export_location, 'Final_{}.pdf'.format(seconds)))
@@ -74,19 +78,21 @@ def generate(layer='parcel', export_location=r'C:/Temp/',
 
     rows = []
     cursor = arcpy.da.SearchCursor('{}/buffer_selected_{}'.format(file_gdb, seconds), ['SHAPE@', '*'])
-    if individual != 'false':
-        for row in cursor:
-            #generate the pdf
-            current_document.title = row[cursor.fields.index(title_field)]
-            data_frame.extent = Extent.expand(row[0].extent, 10)
-            export_and_append(current_document, export_location, final_pdf)
-            rows.append(row)
-	
+    for row in cursor:
+        rows.append(row)
+        if individual == 'false':
+            continue
+        #generate the pdf
+        current_document.title = row[cursor.fields.index(title_field)]
+        data_frame.extent = Extent.expand(row[0].extent, 10)
+        export_and_append(current_document, export_location, final_pdf)
+
 
     #write out csv rows
     arcpy.AddMessage('Exporting csv: output_{}.csv to {}'.format(seconds, export_location))
-    csv_output = open(os.path.join(export_location, 'output_{}.csv'.format(seconds)), 'w')
-    csv_writer = csv.writer(csv_output, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    csv_output = open(os.path.join(export_location, 'output_{}.csv'.format(seconds)), 'wb')
+    csv_writer = csv.writer(csv_output, delimiter=',', quotechar='|', 
+                            quoting=csv.QUOTE_MINIMAL)
     csv_writer.writerow(cursor.fields)
     csv_writer.writerows(rows)
 
