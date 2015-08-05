@@ -22,6 +22,7 @@ p_individual = 4
 symbols = {
     'red': 'N:/ArcGIS10/Layerfiles/Generic/Red_Boundary.lyr',
     'gray': 'N:/ArcGIS10/Layerfiles/Generic/Gray_Boundary.lyr',
+    'orange': 'N:/ArcGIS10/Layerfiles/Generic/Orange_Boundary.lyr',
 }
 class SiteMapGenerator(object):
     def __init__(self):
@@ -114,8 +115,9 @@ class SiteMapGenerator(object):
                                                0, 'NEW_SELECTION')
         return arcpy.mapping.Layer('{}/buffer_{}'.format(file_gdb, file_name))
     
-    def add_map_layer(self, file_name, symbol_layer, data_frame ):
-        layer = arcpy.mapping.Layer('{}/buffer_selected_{}'.format(file_gdb, file_name))
+    def add_map_layer(self, file_name, symbol_layer, data_frame, name='layer' ):
+        layer = arcpy.mapping.Layer(file_name)
+        layer.name = name
         arcpy.ApplySymbologyFromLayer_management(layer, symbol_layer)
         arcpy.mapping.AddLayer(data_frame, layer)
     
@@ -135,47 +137,48 @@ class SiteMapGenerator(object):
         individual = parameters[p_individual].valueAsText
         document_title = parameters[p_title].valueAsText
         file_name = String.get_safe_string(document_title)
-        current_document = arcpy.mapping.MapDocument(map_document)
+        current_document = arcpy.mapping.MapDocument("CURRENT")
         data_frame = arcpy.mapping.ListDataFrames(current_document)[0]
 
         #generate the output workspace
         arcpy.AddMessage('Creating temp workspace: {}/data_{}.gdb'.format(export_location, file_name))
         arcpy.CreateFileGDB_management(export_location, 'data_{}.gdb'.format(file_name))
-        file_gdb = '{}/data_{}.gdb'.format(export_location, file_name)
+        file_gdb = '{}/{}_data.gdb'.format(export_location, file_name)
 
         #activate export view
         current_document.activeView = 'PAGE_LAYOUT'
 
         #export the selected features
-        arcpy.AddMessage('Exporting: layer={}, {}/selected_{}'.format(layer, file_gdb, file_name))
-        arcpy.FeatureClassToFeatureClass_conversion(layer, file_gdb, 'selected_{}'.format(file_name))
+        arcpy.AddMessage('Exporting: layer={}, {}/selected'.format(layer, file_gdb))
+        arcpy.FeatureClassToFeatureClass_conversion(layer, file_gdb, 'selected')
 
         #perform buffer if necessary
         if buffer_dist:
             buffer = self.buffer_and_select(layer, file_gdb, file_name, buffer_dist)
-            arcpy.ApplySymbologyFromLayer_management(buffer, 'N:/ArcGIS10/Layerfiles/Generic/Orange_Boundary.lyr')
+            buffer.name = '{} Buffer'.format(buffer_dist)
+            arcpy.ApplySymbologyFromLayer_management(buffer, symbols['orange'])
             arcpy.mapping.AddLayer(data_frame, buffer)
 
         #export the selected features
-        arcpy.AddMessage('Exporting: layer={}, {}/buffer_selected_{}'.format(layer, file_gdb, file_name))
-        arcpy.FeatureClassToFeatureClass_conversion(layer, file_gdb, 'buffer_selected_{}'.format(file_name))
-        buffer_selected = self.add_map_layer('{}/buffer_selected_{}'.format(layer, file_gdb, file_name), 
+        arcpy.AddMessage('Exporting: layer={}, {}/buffer_selected'.format(layer, file_gdb))
+        arcpy.FeatureClassToFeatureClass_conversion(layer, file_gdb, 'buffer_selected')
+        buffer_selected = self.add_map_layer('{}/buffer_selected'.format(file_gdb), 
             symbols['gray'], data_frame)
 
         #add original selection
-        selected = self.add_map_layer('{}/selected_{}'.format(file_gdb, file_name),
+        selected = self.add_map_layer('{}/selected'.format(file_gdb),
             symbols['red'], data_frame)
 
         #prep output pdf
-        final_pdf = arcpy.mapping.PDFDocumentCreate(os.path.join(export_location, 'Final_{}.pdf'.format(file_name)))
-        arcpy.AddMessage('exporting pdf file Final_{}.pdf to {}'.format(file_name, export_location))
+        final_pdf = arcpy.mapping.PDFDocumentCreate(os.path.join(export_location, '{}_Final.pdf'.format(file_name)))
+        arcpy.AddMessage('exporting pdf file {}_Final.pdf to {}'.format(file_name, export_location))
         data_frame.extent = Extent.expand(buffer_selected.getExtent(), 10)
         current_document.title = document_title
         arcpy.SelectLayerByAttribute_management(layer, "CLEAR_SELECTION")
         self.export_and_append(current_document, export_location, final_pdf)
 
         rows = []
-        cursor = arcpy.da.SearchCursor('{}/buffer_selected_{}'.format(file_gdb, file_name), ['SHAPE@', '*'])
+        cursor = arcpy.da.SearchCursor('{}/buffer_selected'.format(file_gdb, file_name), ['SHAPE@', '*'])
         for row in cursor:
             rows.append(row)
             if individual == 'false':
@@ -187,9 +190,9 @@ class SiteMapGenerator(object):
             self.export_and_append(current_document, export_location, final_pdf)
 
         #write out csv rows
-        arcpy.AddMessage('Exporting csv: output_{}.csv to {}'.format(file_name, export_location))
+        arcpy.AddMessage('Exporting csv: {}_output.csv to {}'.format(file_name, export_location))
         #open csv file as binary so it avoids windows empty lines
-        csv_output = open(os.path.join(export_location, 'output_{}.csv'.format(file_name)), 'wb')
+        csv_output = open(os.path.join(export_location, '{}_output.csv'.format(file_name)), 'wb')
         csv_writer = csv.writer(csv_output, delimiter='|', quotechar='|', 
                                 quoting=csv.QUOTE_MINIMAL, dialect = 'excel')
         csv_writer.writerow(cursor.fields)
