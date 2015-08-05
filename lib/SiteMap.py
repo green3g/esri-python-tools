@@ -24,6 +24,7 @@ symbols = {
     'gray': 'N:/ArcGIS10/Layerfiles/Generic/Gray_Boundary.lyr',
     'orange': 'N:/ArcGIS10/Layerfiles/Generic/Orange_Boundary.lyr',
 }
+
 class SiteMapGenerator(object):
     def __init__(self):
         self.label = 'Generate Site Maps and CSV'
