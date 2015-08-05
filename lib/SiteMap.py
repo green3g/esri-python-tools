@@ -84,15 +84,6 @@ class SiteMapGenerator(object):
             parameters[p_title_field].filter.list = [f.baseName for f in arcpy.Describe(parameters[p_layer].valueAsText).fields]
             
         parameters[p_title_field].enabled = ( parameters[p_individual].valueAsText == 'true' )
-        
-    def execute(self, parameters, messages):
-		arcpy.AddMessage(len(parameters))
-		self.generate(
-			parameters[p_layer].valueAsText,
-			parameters[p_export_location].valueAsText,
-			parameters[p_buffer_dist].valueAsText,
-			parameters[p_title_field].valueAsText,
-                        parameters[p_individual].valueAsText)
                         
     def export_and_append(self, document, export_location, final_pdf):
         temp = os.path.join(export_location, 'temp.pdf')
@@ -102,18 +93,6 @@ class SiteMapGenerator(object):
         final_pdf.appendPages(temp)
         #remove the temp
         arcpy.Delete_management(temp)
-
-    def buffer_and_select(self, layer, file_gdb, buffer_dist):
-        #buffer and select features
-        arcpy.AddMessage('Buffering: layer={}, {}/buffer'.format(layer, file_gdb))
-        arcpy.Buffer_analysis(layer, 
-                              '{}/buffer'.format(file_gdb), 
-                              buffer_dist, 'FULL', 'ROUND', 'ALL')
-        arcpy.AddMessage('Selecting: layer={}, {}/buffer'.format(layer, file_gdb))
-        arcpy.SelectLayerByLocation_management(layer, 'INTERSECT',
-                                               '{}/buffer'.format(file_gdb),
-                                               0, 'NEW_SELECTION')
-        return arcpy.mapping.Layer('{}/buffer'.format(file_gdb))
     
     def add_map_layer(self, file_name, symbol_layer, data_frame, name='layer' ):
         layer = arcpy.mapping.Layer(file_name)
@@ -131,6 +110,7 @@ class SiteMapGenerator(object):
                 parameters[p_title_field].valueAsText,
                 parameters[p_individual].valueAsText))
         
+        #set up local vars for easy access
         layer = parameters[p_layer].valueAsText
         export_location = parameters[p_export_location].valueAsText
         buffer_dist = parameters[p_buffer_dist].valueAsText
@@ -155,10 +135,14 @@ class SiteMapGenerator(object):
 
         #perform buffer if necessary
         if buffer_dist:
-            buffer = self.buffer_and_select(layer, file_gdb, buffer_dist)
-            buffer.name = '{} Buffer'.format(buffer_dist)
-            arcpy.ApplySymbologyFromLayer_management(buffer, symbols['orange'])
-            arcpy.mapping.AddLayer(data_frame, buffer)
+            #buffer and select features
+            arcpy.AddMessage('Buffering and Selecting: layer={}, {}/buffer'.format(layer, file_gdb))
+            arcpy.Buffer_analysis(layer, '{}/buffer'.format(file_gdb), 
+                                  buffer_dist, 'FULL', 'ROUND', 'ALL')
+            arcpy.SelectLayerByLocation_management(layer, 'INTERSECT',
+                '{}/buffer'.format(file_gdb), 0, 'NEW_SELECTION')
+            buffer = self.add_map_layer('{}/buffer'.format(file_gdb), 
+                symbols['orange'], data_frame, '{} Buffer'.format(buffer_dist))
 
         #export the selected features
         arcpy.AddMessage('Exporting: layer={}, {}/buffer_selected'.format(layer, file_gdb))
@@ -194,8 +178,8 @@ class SiteMapGenerator(object):
         arcpy.AddMessage('Exporting csv: {}_output.csv to {}'.format(file_name, export_location))
         #open csv file as binary so it avoids windows empty lines
         csv_output = open(os.path.join(export_location, '{}_output.csv'.format(file_name)), 'wb')
-        csv_writer = csv.writer(csv_output, delimiter='|', quotechar='|', 
-                                quoting=csv.QUOTE_MINIMAL, dialect = 'excel')
+        csv_writer = csv.writer(csv_output, delimiter=',',
+                                quoting=csv.QUOTE_ALL, dialect = 'excel')
         csv_writer.writerow(cursor.fields)
         csv_writer.writerows(rows)
 
