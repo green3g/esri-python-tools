@@ -103,23 +103,24 @@ class SiteMapGenerator(object):
         #remove the temp
         arcpy.Delete_management(temp)
 
-    def buffer_and_select(self, layer, file_gdb, file_name, buffer_dist):
+    def buffer_and_select(self, layer, file_gdb, buffer_dist):
         #buffer and select features
-        arcpy.AddMessage('Buffering: layer={}, {}/buffer_{}'.format(layer, file_gdb, file_name))
+        arcpy.AddMessage('Buffering: layer={}, {}/buffer'.format(layer, file_gdb))
         arcpy.Buffer_analysis(layer, 
-                              '{}/buffer_{}'.format(file_gdb, file_name), 
+                              '{}/buffer'.format(file_gdb), 
                               buffer_dist, 'FULL', 'ROUND', 'ALL')
-        arcpy.AddMessage('Selecting: layer={}, {}/buffer_{}'.format(layer, file_gdb, file_name))
+        arcpy.AddMessage('Selecting: layer={}, {}/buffer'.format(layer, file_gdb))
         arcpy.SelectLayerByLocation_management(layer, 'INTERSECT',
-                                               '{}/buffer_{}'.format(file_gdb, file_name),
+                                               '{}/buffer'.format(file_gdb),
                                                0, 'NEW_SELECTION')
-        return arcpy.mapping.Layer('{}/buffer_{}'.format(file_gdb, file_name))
+        return arcpy.mapping.Layer('{}/buffer'.format(file_gdb))
     
     def add_map_layer(self, file_name, symbol_layer, data_frame, name='layer' ):
         layer = arcpy.mapping.Layer(file_name)
         layer.name = name
         arcpy.ApplySymbologyFromLayer_management(layer, symbol_layer)
         arcpy.mapping.AddLayer(data_frame, layer)
+        return layer
     
     def execute(self, parameters, messages):
         """generates the site map pdf and csv files"""
@@ -141,8 +142,8 @@ class SiteMapGenerator(object):
         data_frame = arcpy.mapping.ListDataFrames(current_document)[0]
 
         #generate the output workspace
-        arcpy.AddMessage('Creating temp workspace: {}/data_{}.gdb'.format(export_location, file_name))
-        arcpy.CreateFileGDB_management(export_location, 'data_{}.gdb'.format(file_name))
+        arcpy.AddMessage('Creating temp workspace: {}/{}_data.gdb'.format(export_location, file_name))
+        arcpy.CreateFileGDB_management(export_location, '{}_data.gdb'.format(file_name))
         file_gdb = '{}/{}_data.gdb'.format(export_location, file_name)
 
         #activate export view
@@ -154,7 +155,7 @@ class SiteMapGenerator(object):
 
         #perform buffer if necessary
         if buffer_dist:
-            buffer = self.buffer_and_select(layer, file_gdb, file_name, buffer_dist)
+            buffer = self.buffer_and_select(layer, file_gdb, buffer_dist)
             buffer.name = '{} Buffer'.format(buffer_dist)
             arcpy.ApplySymbologyFromLayer_management(buffer, symbols['orange'])
             arcpy.mapping.AddLayer(data_frame, buffer)
@@ -163,11 +164,11 @@ class SiteMapGenerator(object):
         arcpy.AddMessage('Exporting: layer={}, {}/buffer_selected'.format(layer, file_gdb))
         arcpy.FeatureClassToFeatureClass_conversion(layer, file_gdb, 'buffer_selected')
         buffer_selected = self.add_map_layer('{}/buffer_selected'.format(file_gdb), 
-            symbols['gray'], data_frame)
+            symbols['gray'], data_frame, 'Buffered Features')
 
         #add original selection
         selected = self.add_map_layer('{}/selected'.format(file_gdb),
-            symbols['red'], data_frame)
+            symbols['red'], data_frame, 'Selected Features')
 
         #prep output pdf
         final_pdf = arcpy.mapping.PDFDocumentCreate(os.path.join(export_location, '{}_Final.pdf'.format(file_name)))
@@ -203,7 +204,7 @@ class SiteMapGenerator(object):
         final_pdf.saveAndClose()
 
         #open explorer
-        Popen('explorer "{}"'.format(export_location))
+        Popen('explorer "{}"'.format(export_location.replace('/', '\\')))
 
         #clean up
         del cursor
