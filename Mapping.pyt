@@ -38,7 +38,7 @@ class SiteMapGenerator(object):
             name = 'title_field',
             direction = 'Input',
             datatype = 'GPString',
-            parameterType = 'Required',
+            parameterType = 'Optional',
         ),arcpy.Parameter(
             displayName = 'Include individual maps of selected features?',
             name = 'individual',
