@@ -1,5 +1,7 @@
 import arcpy
+import lib
 from lib.SiteMap import SiteMapGenerator
+reload(lib)
 
 class Toolbox(object):
     def __init__(self):

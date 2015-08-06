@@ -2,8 +2,8 @@ import arcpy
 import csv
 import os
 from subprocess import Popen
-from Geometry import Extent
-from lib.General import String
+from Esri import Extent, MapDocument
+from General import String
 
 ###
 # Esri Toolbox
@@ -85,22 +85,6 @@ class SiteMapGenerator(object):
             parameters[p_title_field].filter.list = [f.baseName for f in arcpy.Describe(parameters[p_layer].valueAsText).fields]
             
         parameters[p_title_field].enabled = ( parameters[p_individual].valueAsText == 'true' )
-                        
-    def export_and_append(self, document, export_location, final_pdf):
-        temp = os.path.join(export_location, 'temp.pdf')
-        arcpy.AddMessage('Exporting pdf: {}'.format(document.title))
-        arcpy.mapping.ExportToPDF(document, temp)
-        #append it
-        final_pdf.appendPages(temp)
-        #remove the temp
-        arcpy.Delete_management(temp)
-    
-    def add_map_layer(self, file_name, symbol_layer, data_frame, name='layer' ):
-        layer = arcpy.mapping.Layer(file_name)
-        layer.name = name
-        arcpy.ApplySymbologyFromLayer_management(layer, symbol_layer)
-        arcpy.mapping.AddLayer(data_frame, layer)
-        return layer
     
     def execute(self, parameters, messages):
         """generates the site map pdf and csv files"""
@@ -142,18 +126,18 @@ class SiteMapGenerator(object):
                                   buffer_dist, 'FULL', 'ROUND', 'ALL')
             arcpy.SelectLayerByLocation_management(layer, 'INTERSECT',
                 '{}/buffer'.format(file_gdb), 0, 'NEW_SELECTION')
-            buffer = self.add_map_layer('{}/buffer'.format(file_gdb), 
-                symbols['orange'], data_frame, '{} Buffer'.format(buffer_dist))
+            buffer = MapDocument.add_map_layer('{}/buffer'.format(file_gdb), 
+                symbols['orange'], '{} Buffer'.format(buffer_dist))
 
         #export the selected features
         arcpy.AddMessage('Exporting: layer={}, {}/buffer_selected'.format(layer, file_gdb))
         arcpy.FeatureClassToFeatureClass_conversion(layer, file_gdb, 'buffer_selected')
-        buffer_selected = self.add_map_layer('{}/buffer_selected'.format(file_gdb), 
-            symbols['gray'], data_frame, 'Buffered Features')
+        buffer_selected = MapDocument.add_map_layer('{}/buffer_selected'.format(file_gdb), 
+            symbols['gray'], 'Buffered Features')
 
         #add original selection
-        selected = self.add_map_layer('{}/selected'.format(file_gdb),
-            symbols['red'], data_frame, 'Selected Features')
+        selected = MapDocument.add_map_layer('{}/selected'.format(file_gdb),
+            symbols['red'], 'Selected Features')
 
         #prep output pdf
         final_pdf = arcpy.mapping.PDFDocumentCreate(os.path.join(export_location, '{}_Final.pdf'.format(file_name)))
@@ -161,7 +145,7 @@ class SiteMapGenerator(object):
         data_frame.extent = Extent.expand(buffer_selected.getExtent(), 10)
         current_document.title = document_title
         arcpy.SelectLayerByAttribute_management(layer, "CLEAR_SELECTION")
-        self.export_and_append(current_document, export_location, final_pdf)
+        MapDocument.export_and_append(export_location, final_pdf)
 
         rows = []
         cursor = arcpy.da.SearchCursor('{}/buffer_selected'.format(file_gdb, file_name), ['SHAPE@', '*'])
@@ -173,7 +157,7 @@ class SiteMapGenerator(object):
             if title_field in cursor.fields:
                 current_document.title = row[cursor.fields.index(title_field)]
             data_frame.extent = Extent.expand(row[0].extent, 10)
-            self.export_and_append(current_document, export_location, final_pdf)
+            MapDocument.export_and_append(export_location, final_pdf)
 
         #write out csv rows
         arcpy.AddMessage('Exporting csv: {}_output.csv to {}'.format(file_name, export_location))
