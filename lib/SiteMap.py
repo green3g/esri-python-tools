@@ -4,6 +4,7 @@ import os
 from subprocess import Popen
 from Esri import Extent, MapDocument
 from General import String
+from General import Directory
 
 ###
 # Esri Toolbox
@@ -17,6 +18,11 @@ p_buffer_dist = 2
 p_title = 3
 p_title_field = 5
 p_individual = 4
+
+#default tool field values
+d_layer = 'parcel'
+d_export_location = 'N:/PlanningZoning/SiteMaps/2015'
+d_buffer_dist = '350 Feet'
 
 #symbol layers
 symbols = {
@@ -70,9 +76,9 @@ class SiteMapGenerator(object):
             datatype = 'GPString',
             parameterType = 'Optional',
         )]
-	params[p_layer].value = 'parcel'
-	params[p_export_location].value = 'J:/'
-	params[p_buffer_dist].value = '350 Feet'
+	params[p_layer].value = d_layer
+	params[p_export_location].value = d_export_location
+	params[p_buffer_dist].value = d_buffer_dist
 	params[p_title_field].filter.type = 'valueList'
 	params[p_title_field].filter.list = []
 	params[p_title_field].enabled = False
@@ -107,6 +113,11 @@ class SiteMapGenerator(object):
         data_frame = arcpy.mapping.ListDataFrames(current_document)[0]
 
         #generate the output workspace
+        directory = document_title
+        if document_title == '':
+            directory = 'SitemapToolOutput'
+        export_location = os.path.join(export_location, directory)
+        Directory.make_sure_path_exists(export_location)
         arcpy.AddMessage('Creating temp workspace: {}/{}_data.gdb'.format(export_location, file_name))
         arcpy.CreateFileGDB_management(export_location, '{}_data.gdb'.format(file_name))
         file_gdb = '{}/{}_data.gdb'.format(export_location, file_name)
