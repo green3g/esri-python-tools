@@ -40,6 +40,11 @@ def create_projected_datasets(from_db, to_db, projection, foreach_layer = None):
 def clean(to_db):
     """removes all datasets and layers from the to_db"""
     env.workspace = to_db
+    feature_classes = arcpy.ListFeatureClasses()
+    #delete each feature class
+    for feature_class in feature_classes:
+        arcpy.AddMessage('Removing {}/{}'.format(env.workspace, feature_class))
+        arcpy.Delete_management('{}/{}'.format(env.workspace, feature_class))
     datasets = arcpy.ListDatasets()
     if len(datasets):
         for dataset in datasets:
@@ -206,6 +211,9 @@ class Clip(object):
                 return
             
             arcpy.Clip_analysis('{}/{}'.format(from_dataset_path, feature_class), 
-                clip_layer, '{}/{}'.format(to_dataset_path, feature_class))
+                clip_layer, 'in_memory/{}'.format(feature_class))
+            arcpy.FeatureClassToFeatureClass_conversion(
+                'in_memory/{}'.format(feature_class), to_dataset_path, feature_class)
+            arcpy.Delete_management('in_memory/{}'.format(feature_class))
             
         create_projected_datasets(from_db, to_db, projection, foreach_layer)
