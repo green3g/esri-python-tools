@@ -3,8 +3,7 @@ import csv
 import os
 from subprocess import Popen
 from Esri import Extent, MapDocument
-from General import String
-from General import Directory
+from General import String, Directory
 
 ###
 # Esri Toolbox

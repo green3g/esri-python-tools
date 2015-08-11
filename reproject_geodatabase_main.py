@@ -1,9 +1,8 @@
-from lib.Geodatabase import Copier
+import lib.Geodatabase
 
 def run_copy_tool(from_db, to_db, projection):
-    copier = Copier(from_db, to_db)
-    copier.clean()
-    copier.copy(projection)
+    Geodatabase.clean(to_db)
+    Geodatabase.reproject(from_db, to_db, projection)
 
 #defaults if run at command line 
 if __name__ == '__main__':

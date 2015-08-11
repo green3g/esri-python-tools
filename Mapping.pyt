@@ -1,4 +1,3 @@
-import arcpy
 import lib
 from lib.SiteMap import SiteMapGenerator
 
