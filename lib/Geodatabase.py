@@ -2,6 +2,8 @@ import arcpy
 from arcpy import env
 
 def create_projected_datasets(from_db, to_db, projection, foreach_layer = None):
+    """creates the projected datasets necessary and then calls the function 
+    to perform additional functions on each layer if it exists"""
     #get the datasets in the input workspace
     env.workspace = from_db
     arcpy.AddMessage('Workspace: {}'.format(env.workspace))
@@ -110,37 +112,20 @@ class Reproject(object):
         if not arcpy.Exists(projection):
             arcpy.AddMessage('Projection file {} does not exist'.format(projection))
             return
+            
+        def foreach_layer(from_dataset_path, to_dataset_path, feature_class):
+            from_feature_path = '{}/{}'.format(from_dataset_path, feature_class)
+            to_feature_path = '{}/{}'.format(to_dataset_path, feature_class)
+            arcpy.AddMessage('Copying Featureclass: {}'.format(from_feature_path))
 
-        #get the datasets in the input workspace
-        env.workspace = from_db
-        arcpy.AddMessage('Workspace: {}'.format(env.workspace))
-        in_datsets = arcpy.ListDatasets()
-        if len(in_datsets):
-            for dataset in in_datsets:
-                from_dataset_path = '{}/{}'.format(from_db, dataset)
-                to_dataset_path = '{}/{}'.format(to_db, dataset)
-                arcpy.AddMessage('Creating Dataset: {}'.format(from_dataset_path))
-
-                #skip existing datasets
-                if arcpy.Exists(to_dataset_path):
-                    arcpy.AddMessage('Skipping dataset {} because it already exists'.format(to_dataset_path))
-                    continue
-
-                #create the new dataset with the defined projection
-                arcpy.CreateFeatureDataset_management(to_db, dataset, projection)
-                env.workspace = from_dataset_path
-                feature_classes = arcpy.ListFeatureClasses()
-                #copy each feature class over
-                for feature_class in feature_classes:
-                    from_feature_path = '{}/{}'.format(from_dataset_path, feature_class)
-                    to_feature_path = '{}/{}'.format(to_dataset_path, feature_class)
-                    arcpy.AddMessage('Copying Featureclass: {}'.format(from_feature_path))
-
-                    if arcpy.Exists(to_feature_path):
-                        arcpy.AddMessage('Skipping feature class {} because it already exists'.format(to_feature_path))
-                        continue
-                    arcpy.FeatureClassToFeatureClass_conversion(from_feature_path, to_dataset_path, feature_class)
-
+            if arcpy.Exists(to_feature_path):
+                arcpy.AddMessage('Skipping feature class {} because it already exists'.format(to_feature_path))
+                return
+            arcpy.FeatureClassToFeatureClass_conversion(from_feature_path, to_dataset_path, feature_class)
+        
+        #call the create datasets function passing the foreach layer function to it
+        create_projected_datasets(from_db, to_db, projection, foreach_layer)
+           
 #arcpy toolbox
 #parameter indexes
 p_from_db = 0
