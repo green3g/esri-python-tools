@@ -1,22 +1,36 @@
 import arcpy
 from arcpy import env
 
-def create_projected_datasets(from_db, to_db, projection, foreach_layer = None):
+def copy_tables(input_ws, output_ws, foreach_table = None):
+    env.workspace = input_ws
+    feature_tables = arcpy.ListTables()
+    for table in feature_tables:
+        if(foreach_table):
+            foreach_table(input_ws, output_ws, table)
+        else:
+            arcpy.TableToTable_management('{}/{}'.format(input_ws, table), output_ws, table)
+
+def process_feature_classes(input_ws, output_ws, foreach_layer = None):
+    env.workspace = input_ws
+    feature_classes = arcpy.ListFeatureClasses()
+    if foreach_layer:
+        #copy each feature class over
+        for feature_class in feature_classes:
+            foreach_layer(input_ws, output_ws, feature_class)
+
+def create_projected_datasets(from_db, to_db, projection, foreach_layer = None, foreach_table = None):
     """creates the projected datasets necessary and then calls the function 
     to perform additional functions on each layer if it exists"""
     #get the datasets in the input workspace
-    env.workspace = from_db
     arcpy.AddMessage('Workspace: {}'.format(env.workspace))
     
     #handle feature classes at the top level. these are moved into _top dataset for
     #automatic projection handling
     arcpy.CreateFeatureDataset_management(to_db, '_top', projection)
     to_dataset_path = '{}/_top'.format(to_db)
-    feature_classes = arcpy.ListFeatureClasses()
-    if foreach_layer:
-        #copy each feature class over
-        for feature_class in feature_classes:
-            foreach_layer(from_db, to_dataset_path, feature_class)
+    copy_tables(from_db, to_db, foreach_table)
+    
+    process_feature_classes(from_db, to_dataset_path, foreach_layer)
             
     in_datsets = arcpy.ListDatasets()
     if len(in_datsets):
@@ -32,12 +46,7 @@ def create_projected_datasets(from_db, to_db, projection, foreach_layer = None):
 
             #create the new dataset with the defined projection
             arcpy.CreateFeatureDataset_management(to_db, dataset, projection)
-            env.workspace = from_dataset_path
-            feature_classes = arcpy.ListFeatureClasses()
-            if foreach_layer:
-                #copy each feature class over
-                for feature_class in feature_classes:
-                    foreach_layer(from_dataset_path, to_dataset_path, feature_class)
+            process_feature_classes(from_db, to_dataset_path, foreach_layer)
             
 def clean(to_db):
     """removes all datasets and layers from the to_db"""
@@ -49,22 +58,24 @@ def clean(to_db):
         arcpy.Delete_management('{}/{}'.format(env.workspace, feature_class))
     datasets = arcpy.ListDatasets()
     if len(datasets):
+        def remove(input_ws, output_ws, feature_class):
+            arcpy.AddMessage('Removing {}/{}'.format(output_ws, feature_class))
+            arcpy.Delete_management('{}/{}'.format(output_ws, feature_class))
         for dataset in datasets:
-            env.workspace = '{}/{}'.format(to_db, dataset)
-            feature_classes = arcpy.ListFeatureClasses()
-            #delete each feature class
-            for feature_class in feature_classes:
-                arcpy.AddMessage('Removing {}/{}'.format(env.workspace, feature_class))
-                arcpy.Delete_management('{}/{}'.format(env.workspace, feature_class))
+            path = '{}/{}'.format(to_db, dataset)
+            
+            #process each feature class
+            process_feature_classes(path, path, remove)
+            
             #delete the dataset
             arcpy.AddMessage('Removing {}'.format(env.workspace))
             arcpy.Delete_management(env.workspace)
 
 #arcpy toolbox
 #parameter indexes
-p_from_db = 0
-p_to_db = 1
-p_projection = 2
+reproject_from_db = 0
+reproject_to_db = 1
+reproject_projection = 2
 
 class Reproject(object):
     """arcpy toolbox for reprojecting an entire database"""
@@ -96,12 +107,12 @@ class Reproject(object):
         )]
     def execute(self, parameters, messages):
         arcpy.AddMessage('{}; {}; {};'.format(
-            parameters[p_from_db].valueAsText,
-            parameters[p_to_db].valueAsText,
-            parameters[p_projection].valueAsText))
-        from_db = parameters[p_from_db].valueAsText
-        to_db = parameters[p_to_db].valueAsText
-        projection = parameters[p_projection].valueAsText
+            parameters[reproject_from_db].valueAsText,
+            parameters[reproject_to_db].valueAsText,
+            parameters[reproject_projection].valueAsText))
+        from_db = parameters[reproject_from_db].valueAsText
+        to_db = parameters[reproject_to_db].valueAsText
+        projection = parameters[reproject_projection].valueAsText
         
         #run the functions
         clean(to_db)
@@ -128,10 +139,10 @@ class Reproject(object):
            
 #arcpy toolbox
 #parameter indexes
-p_from_db = 0
-p_to_db = 1
-p_projection = 2
-p_clip_layer = 3
+clip_from_db = 0
+clip_to_db = 1
+clip_projection = 2
+clip_clip_layer = 3
 
 class Clip(object):
     """arcpy toolbox for clipping an entire database"""
@@ -169,13 +180,13 @@ class Clip(object):
         )]
     def execute(self, parameters, messages):
         arcpy.AddMessage('{}; {}; {};'.format(
-            parameters[p_from_db].valueAsText,
-            parameters[p_to_db].valueAsText,
-            parameters[p_projection].valueAsText))
-        from_db = parameters[p_from_db].valueAsText
-        to_db = parameters[p_to_db].valueAsText
-        projection = parameters[p_projection].valueAsText
-        clip_layer = parameters[p_clip_layer].valueAsText
+            parameters[clip_from_db].valueAsText,
+            parameters[clip_to_db].valueAsText,
+            parameters[clip_projection].valueAsText))
+        from_db = parameters[clip_from_db].valueAsText
+        to_db = parameters[clip_to_db].valueAsText
+        projection = parameters[clip_projection].valueAsText
+        clip_layer = parameters[clip_clip_layer].valueAsText
         
         #run the functions
         clean(to_db)
@@ -202,3 +213,5 @@ class Clip(object):
             arcpy.Delete_management('in_memory/{}'.format(feature_class))
             
         create_projected_datasets(from_db, to_db, projection, foreach_layer)
+
+
