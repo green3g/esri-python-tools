@@ -32,7 +32,12 @@ def process_feature_classes(input_ws, output_ws, foreach_layer = None):
         for feature_class in feature_classes:
             foreach_layer(input_ws, output_ws, feature_class)
 
-def create_projected_datasets(from_db, to_db, projection, foreach_layer = None, foreach_table = None):
+def process_datasets(from_db, 
+        to_db = None, 
+        projection = None, 
+        foreach_layer = None, 
+        foreach_table = None,
+        foreach_dataset = None):
     """
     creates the projected datasets necessary and then calls the function 
     to perform additional functions on each layer and table
@@ -58,16 +63,17 @@ def create_projected_datasets(from_db, to_db, projection, foreach_layer = None, 
         for dataset in in_datsets:
             from_dataset_path = '{}/{}'.format(from_db, dataset)
             to_dataset_path = '{}/{}'.format(to_db, dataset)
-            arcpy.AddMessage('Creating Dataset: {}'.format(from_dataset_path))
-
-            #skip existing datasets
-            if arcpy.Exists(to_dataset_path):
-                arcpy.AddMessage('Skipping dataset {} because it already exists'.format(to_dataset_path))
-                continue
-
-            #create the new dataset with the defined projection
-            arcpy.CreateFeatureDataset_management(to_db, dataset, projection)
-            process_feature_classes(from_db, to_dataset_path, foreach_layer)
+            arcpy.AddMessage('Processing Dataset: {}'.format(from_dataset_path))
+            if foreach_dataset:
+                foreach_dataset(from_db, to_db, dataset)
+            else:
+                #skip existing datasets
+                if arcpy.Exists(to_dataset_path):
+                    arcpy.AddMessage('Skipping dataset {} because it already exists'.format(to_dataset_path))
+                    continue
+                #create the new dataset with the defined projection
+                arcpy.CreateFeatureDataset_management(to_db, dataset, projection)
+            process_feature_classes(from_dataset_path, to_dataset_path, foreach_layer)
             
 def clean(to_db):
     """

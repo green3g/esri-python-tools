@@ -57,7 +57,7 @@ class Reproject(object):
         def foreach_layer(from_dataset_path, to_dataset_path, feature_class):
             from_feature_path = '{}/{}'.format(from_dataset_path, feature_class)
             to_feature_path = '{}/{}'.format(to_dataset_path, feature_class)
-            arcpy.AddMessage('Copying Featureclass: {}'.format(from_feature_path))
+            arcpy.AddMessage('Reprojecting Featureclass: {}'.format(from_feature_path))
 
             if arcpy.Exists(to_feature_path):
                 arcpy.AddMessage('Skipping feature class {} because it already exists'.format(to_feature_path))
@@ -65,4 +65,7 @@ class Reproject(object):
             arcpy.FeatureClassToFeatureClass_conversion(from_feature_path, to_dataset_path, feature_class)
         
         #call the create datasets function passing the foreach layer function to it
-        Geodatabase.create_projected_datasets(from_db, to_db, projection, foreach_layer)
+        Geodatabase.process_datasets(from_db, 
+            to_db, 
+            projection, 
+            foreach_layer = foreach_layer)

@@ -69,10 +69,14 @@ class Clip(object):
                 arcpy.AddMessage('Skipping feature class {} because it already exists'.format(to_feature_path))
                 return
             
+            arcpy.AddMessage('Clipping Featureclass: {}'.format(from_feature_path))
             arcpy.Clip_analysis('{}/{}'.format(from_dataset_path, feature_class), 
                 clip_layer, 'in_memory/{}'.format(feature_class))
             arcpy.FeatureClassToFeatureClass_conversion(
                 'in_memory/{}'.format(feature_class), to_dataset_path, feature_class)
             arcpy.Delete_management('in_memory/{}'.format(feature_class))
             
-        Geodatabase.create_projected_datasets(from_db, to_db, projection, foreach_layer)
+        Geodatabase.process_datasets(from_db, 
+            to_db, 
+            projection, 
+            foreach_layer=foreach_layer)
