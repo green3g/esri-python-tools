@@ -1,5 +1,5 @@
 import lib
-from lib.SiteMap import SiteMapGenerator
+from lib.Sitemap_Tool import SiteMapGenerator
 
 class Toolbox(object):
     def __init__(self):
