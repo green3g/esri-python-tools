@@ -1,6 +1,7 @@
 import arcpy
 import csv
 import os
+import time
 from subprocess import Popen
 from Esri import Extent, MapDocument
 from General import String, Directory
@@ -57,7 +58,7 @@ class SiteMapGenerator(object):
             datatype = 'GPString',
             parameterType = 'Optional',
         ), arcpy.Parameter(
-            displayName = 'Document Title',
+            displayName = 'Document Title (Insert Document Title into layout)',
             name = 'title',
             direction = 'Input',
             datatype = 'GPString',
@@ -107,14 +108,16 @@ class SiteMapGenerator(object):
         title_field = parameters[p_title_field].valueAsText
         individual = parameters[p_individual].valueAsText
         document_title = parameters[p_title].valueAsText
-        file_name = String.get_safe_string(document_title)
         current_document = arcpy.mapping.MapDocument("CURRENT")
         data_frame = arcpy.mapping.ListDataFrames(current_document)[0]
 
         #generate the output workspace
-        directory = document_title
         if document_title == '':
             directory = 'SitemapToolOutput'
+            filename = time.strftime('%m-%d-%y-(%H.%M)')
+        else:
+            directory = document_title
+            file_name = String.get_safe_string(document_title)
         export_location = os.path.join(export_location, directory)
         Directory.make_sure_path_exists(export_location)
         arcpy.AddMessage('Creating temp workspace: {}/{}_data.gdb'.format(export_location, file_name))
