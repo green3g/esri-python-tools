@@ -58,7 +58,7 @@ class SiteMapGenerator(object):
             datatype = 'GPString',
             parameterType = 'Optional',
         ), arcpy.Parameter(
-            displayName = 'Document Title (Insert Document Title into layout)',
+            displayName = 'Document Title and Export Folder (Insert Document Title into layout)',
             name = 'title',
             direction = 'Input',
             datatype = 'GPString',
