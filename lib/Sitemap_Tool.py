@@ -94,12 +94,6 @@ class SiteMapGenerator(object):
     
     def execute(self, parameters, messages):
         """generates the site map pdf and csv files"""
-        arcpy.AddMessage('{}; {}; {}; {}; {};'.format(
-                parameters[p_layer].valueAsText,
-                parameters[p_export_location].valueAsText,
-                parameters[p_buffer_dist].valueAsText,
-                parameters[p_title_field].valueAsText,
-                parameters[p_individual].valueAsText))
         
         #set up local vars for easy access
         layer = parameters[p_layer].valueAsText
@@ -110,14 +104,20 @@ class SiteMapGenerator(object):
         document_title = parameters[p_title].valueAsText
         current_document = arcpy.mapping.MapDocument("CURRENT")
         data_frame = arcpy.mapping.ListDataFrames(current_document)[0]
+        
+        arcpy.AddMessage("""layer={}; export_location={}; buffer_dist={}; 
+                title_field={}; individual={}; document_title={};""".format(
+                layer, export_location, buffer_dist, title_field, individual,
+                document_title))
 
         #generate the output workspace
-        if document_title == '':
-            directory = 'SitemapToolOutput'
-            filename = time.strftime('%m-%d-%y-(%H.%M)')
-        else:
+        if document_title and document_title != '':
             directory = document_title
             file_name = String.get_safe_string(document_title)
+        else:
+            directory = time.strftime('%m-%d-%y-(%H.%M)')
+            file_name = time.strftime('%m-%d-%y-(%H.%M)')
+            
         export_location = os.path.join(export_location, directory)
         Directory.make_sure_path_exists(export_location)
         arcpy.AddMessage('Creating temp workspace: {}/{}_data.gdb'.format(export_location, file_name))
