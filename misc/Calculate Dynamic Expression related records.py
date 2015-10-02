@@ -23,6 +23,7 @@ def get_condition(row):
     return "- {} Units in {} Condition".format(row.Units, row.Condition)
 def get_type(row):
     return "- {} Units of {} Type".format(row.Units, row.Type)
+id_field = "Downtown_Parcels_wBlock2.Block_Number"
 lookup_tables = [{
         "table": "Blocks",
         "row_formatter": get_block,
@@ -42,9 +43,9 @@ def FindLabel ( [Downtown_Parcels_wBlock2.Block_Number] ):
     if id:
         mxd = arcpy.mapping.MapDocument("CURRENT")
         text = ""
-        for value in lookup_tables:
-            query = "{} = {}".format(id, value["id_field"])
-            rows = arcpy.SearchCursor(value["table"], query)
+        for table in lookup_tables:
+            query = "{} = {}".format(id, table["id_field"])
+            rows = arcpy.SearchCursor(table["table"], query)
             for row in rows:
-                text ="{}{} \n".format(text, value["row_formatter"](row))
+                text ="{}{} \n".format(text, table["row_formatter"](row))
     return text
