@@ -1,4 +1,3 @@
-#
 # Calculates the dynamic expression for a layer and can be used
 # to dynamically display related records text for data driven pages
 # or feature labels
@@ -24,7 +23,6 @@ def get_condition(row):
     return "- {} Units in {} Condition".format(row.Units, row.Condition)
 def get_type(row):
     return "- {} Units of {} Type".format(row.Units, row.Type)
-id_field = "Downtown_Parcels_wBlock2.Block_Number"
 lookup_tables = [{
         "table": "Blocks",
         "row_formatter": get_block,
