@@ -4,11 +4,19 @@
 # or feature labels
 #
 # Instructions:
+# Change the FindLabel parameter to the id field of the main table
+# This id should be related to each of the related tables
+# Also change the first line of FindLabel. Set id equal to the FindLabel parameter
 # Change the formatter functions to match up with what you want displayed
 # for each row. These should return plain text for each row.
 # change the lookup tables and assign their appropriate formatter function
 #
-# Author: roemhildtg
+# Properties of each lookup item:
+# table: the name of the table in the mxd
+# row_formatter: the function that will format each row's properties and return
+# the text string
+# id_field: the name of the field in the table that is related to the
+# id passed in to FindLabel
 import arcpy
 def get_block(row):
     return "<BOL>Block {} ({}):\n {} Buildings</BOL>".format(row.Block, row.Reference, row.Number_of_Buildings)
