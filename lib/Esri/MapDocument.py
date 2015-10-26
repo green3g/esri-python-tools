@@ -12,7 +12,7 @@ def export_and_append(export_location, final_pdf, document = None ):
     final_pdf.appendPages(temp)
     #remove the temp
     arcpy.Delete_management(temp)
-    
+
 def add_map_layer(file_name, symbol_layer, name='layer', data_frame = None):
     """creates and adds a symbolized layer to a data frame"""
     if not data_frame:

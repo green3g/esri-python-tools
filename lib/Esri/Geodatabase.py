@@ -16,13 +16,13 @@ def copy_tables(input_ws, output_ws, foreach_table = None):
         if(foreach_table):
             foreach_table(input_ws, output_ws, table)
         else:
-            arcpy.TableToTable_management('{}/{}'.format(input_ws, table), output_ws, table)
+            arcpy.TableToTable_conversion('{}/{}'.format(input_ws, table), output_ws, table)
 
 def process_feature_classes(input_ws, output_ws, foreach_layer = None):
     """
     processes each featureclass with an optional function
     input_ws - the database or dataset path to process feature classes
-    output_ws - the output for the feature classes 
+    output_ws - the output for the feature classes
     foreach_layer - the function to process the feature classes
     """
     env.workspace = input_ws
@@ -32,14 +32,14 @@ def process_feature_classes(input_ws, output_ws, foreach_layer = None):
         for feature_class in feature_classes:
             foreach_layer(input_ws, output_ws, feature_class)
 
-def process_datasets(from_db, 
-        to_db = None, 
-        projection = None, 
-        foreach_layer = None, 
+def process_datasets(from_db,
+        to_db = None,
+        projection = None,
+        foreach_layer = None,
         foreach_table = None,
         foreach_dataset = None):
     """
-    creates the projected datasets necessary and then calls the function 
+    creates the projected datasets necessary and then calls the function
     to perform additional functions on each layer and table
     from_db - the input database to pull from
     to_db - the output database to place the processed data
@@ -49,15 +49,15 @@ def process_datasets(from_db,
     """
     #get the datasets in the input workspace
     arcpy.AddMessage('Workspace: {}'.format(env.workspace))
-    
+
     #handle feature classes at the top level. these are moved into _top dataset for
     #automatic projection handling
     arcpy.CreateFeatureDataset_management(to_db, '_top', projection)
     to_dataset_path = '{}/_top'.format(to_db)
     copy_tables(from_db, to_db, foreach_table)
-    
+
     process_feature_classes(from_db, to_dataset_path, foreach_layer)
-            
+
     in_datsets = arcpy.ListDatasets()
     if len(in_datsets):
         for dataset in in_datsets:
@@ -74,7 +74,7 @@ def process_datasets(from_db,
                 #create the new dataset with the defined projection
                 arcpy.CreateFeatureDataset_management(to_db, dataset, projection)
             process_feature_classes(from_dataset_path, to_dataset_path, foreach_layer)
-            
+
 def clean(to_db):
     """
     removes all datasets and layers from the to_db
@@ -93,11 +93,10 @@ def clean(to_db):
             arcpy.Delete_management('{}/{}'.format(output_ws, feature_class))
         for dataset in datasets:
             path = '{}/{}'.format(to_db, dataset)
-            
+
             #process each feature class
             process_feature_classes(path, path, remove)
-            
+
             #delete the dataset
             arcpy.AddMessage('Removing {}'.format(env.workspace))
             arcpy.Delete_management(env.workspace)
- 
