@@ -1,8 +1,10 @@
 import lib.Geodatabase
+import lib.Reproject_Tool import Reproject
 
-def run_copy_tool(from_db, to_db, projection):
+def run_tool(from_db, to_db, projection):
     Geodatabase.clean(to_db)
-    Geodatabase.reproject(from_db, to_db, projection)
+    r = Reproject()
+    r.reproject(from_db, to_db, projection)
 
 #defaults if run at command line
 if __name__ == '__main__':
@@ -12,4 +14,4 @@ if __name__ == '__main__':
     projection = 'N:/BaseData/rice_co.prj'
 
     #run the tool
-    run_copy_tool(from_db, to_db, projection)
+    run_tool(from_db, to_db, projection)

@@ -4,5 +4,5 @@ from lib.Reproject_Tool import Reproject
 class Toolbox(object):
     def __init__(self):
         self.label = 'Geodatabase Management Toolbox'
-        self.alias = 'Management'
+        self.alias = 'gdb'
         self.tools = [Reproject, Clip]

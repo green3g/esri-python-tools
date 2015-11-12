@@ -80,7 +80,15 @@ def clean(to_db):
     removes all datasets and layers from the to_db
     to_db - the database to remove datasets and layers from
     """
+    if not arcpy.Exists(to_db):
+        return
     env.workspace = to_db
+
+    tables = arcpy.ListTables()
+    for table in tables:
+        arcpy.AddMessage('Removing {}/{}'.format(env.workspace, table))
+        arcpy.Delete_management('{}/{}'.format(env.workspace, table))
+
     feature_classes = arcpy.ListFeatureClasses()
     #delete each feature class
     for feature_class in feature_classes:

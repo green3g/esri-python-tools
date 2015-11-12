@@ -5,10 +5,10 @@
 		<CreaDate SYNC="true"/>
 		<CreaTime SYNC="true"/>
 		<SyncOnce SYNC="true">TRUE</SyncOnce>
-		<ModDate SYNC="true">20151006</ModDate>
-		<ModTime SYNC="true">150909</ModTime>
+		<ModDate SYNC="true">20151112</ModDate>
+		<ModTime SYNC="true">111257</ModTime>
 	</Esri>
-	<toolbox name="Geodatabase" alias="Management">
+	<toolbox name="Geodatabase" alias="gdb">
 		<arcToolboxHelpPath>c:\program files (x86)\arcgis\desktop10.3\Help\gp</arcToolboxHelpPath>
 		<summary>The Data Management toolbox provides a rich and varied collection of tools that are used to develop, manage, and maintain feature classes, datasets, layers, and raster data structures.</summary>
 		<toolsets>

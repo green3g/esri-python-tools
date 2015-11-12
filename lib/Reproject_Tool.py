@@ -43,17 +43,17 @@ class Reproject(object):
         from_db = parameters[reproject_from_db].valueAsText
         to_db = parameters[reproject_to_db].valueAsText
         projection = parameters[reproject_projection].valueAsText
-        
+
         #run the functions
         Geodatabase.clean(to_db)
         self.reproject(from_db, to_db, projection)
-        
+
     def reproject(self, from_db, to_db, projection):
         """reprojects an entire geodatabase's datasets"""
         if not arcpy.Exists(projection):
             arcpy.AddMessage('Projection file {} does not exist'.format(projection))
             return
-            
+
         def foreach_layer(from_dataset_path, to_dataset_path, feature_class):
             from_feature_path = '{}/{}'.format(from_dataset_path, feature_class)
             to_feature_path = '{}/{}'.format(to_dataset_path, feature_class)
@@ -63,9 +63,9 @@ class Reproject(object):
                 arcpy.AddMessage('Skipping feature class {} because it already exists'.format(to_feature_path))
                 return
             arcpy.FeatureClassToFeatureClass_conversion(from_feature_path, to_dataset_path, feature_class)
-        
+
         #call the create datasets function passing the foreach layer function to it
-        Geodatabase.process_datasets(from_db, 
-            to_db, 
-            projection, 
+        Geodatabase.process_datasets(from_db,
+            to_db,
+            projection,
             foreach_layer = foreach_layer)
