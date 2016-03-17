@@ -8,7 +8,7 @@
 # Copyright:   (c) groemhildt 2016
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
-from arcpy.mapping import MapDocument, ListDataFrames, ListLayers
+from arcpy.mp import ArcGISProject
 from arcpy.da import UpdateCursor
 from arcpy import Parameter
 
@@ -30,14 +30,14 @@ def update_layer(layer, field, value, new_value):
     return 'Layer Updated: {}'.format(layer)
 
 def get_layer_names():
-    mxd = MapDocument('CURRENT')
-    df = ListDataFrames(mxd)[0]
-    return [l.name for l in ListLayers(mxd, "", df)]
+    doc = ArcGISProject('current')
+    m = doc.listMaps('Map')[0]
+    return [l.name for l in m.listLayers()]
 
 def main():
     layers = get_layer_names()
     for layer in layers:
-        print update_layer(layer, 'Plan_ID', '1415', '1415TownSquareLn')
+        print(update_layer(layer, 'Plan_ID', '1415', '1415TownSquareLn'))
 
 if __name__ == '__main__':
     main()
