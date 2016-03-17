@@ -3,8 +3,8 @@ import csv
 import os
 import time
 from subprocess import Popen
-from Esri import Extent, MapDocument
-from General import String, File_Operations
+from .Esri import Extent, MapDocument
+from .General import String, File_Operations
 
 ###
 # Esri Toolbox

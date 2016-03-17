@@ -30,7 +30,7 @@ def copy_file(input_folder, destination_folder, filename):
     filepath = join(input_folder, filename)
     #make sure the file exists
     if not isfile(filepath):
-        print '{} is not a file'.format(filepath)
+        print ('{} is not a file'.format(filepath))
         return False
 
     # make sure the output folder exists
@@ -40,7 +40,7 @@ def copy_file(input_folder, destination_folder, filename):
     new_filepath = join(destination_folder, filename)
     if not isfile(new_filepath):
         copyfile(filepath, new_filepath)
-        print 'Created file: {}'.format(new_filepath)
+        print ('Created file: {}'.format(new_filepath))
     return True
 
 def extract_page(input_file, number, output_path, filename_formatter=get_page_filename):
@@ -52,7 +52,7 @@ def extract_page(input_file, number, output_path, filename_formatter=get_page_fi
     """
 
     if not isfile(input_file):
-        print '{} is not a file'.format(input_file)
+        print ('{} is not a file'.format(input_file))
         return False
 
     #get a file name
