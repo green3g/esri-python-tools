@@ -3,10 +3,8 @@ import csv
 import os
 import time
 from subprocess import Popen
-import Esri
-import General
 from Esri import Extent, MapDocument
-from General import String, Directory
+from General import String, File_Operations
 
 ###
 # Esri Toolbox
@@ -122,14 +120,14 @@ class SiteMapGenerator(object):
 
         # generate the output workspace
         if document_title and document_title != '':
-            directory = document_title
+            File_Operations = document_title
             file_name = String.get_safe_string(document_title)
         else:
-            directory = time.strftime('%m-%d-%y-(%H.%M)')
+            File_Operations = time.strftime('%m-%d-%y-(%H.%M)')
             file_name = time.strftime('%m-%d-%y-(%H.%M)')
 
-        export_location = os.path.join(export_location, directory)
-        Directory.make_sure_path_exists(export_location)
+        export_location = os.path.join(export_location, File_Operations)
+        File_Operations.make_sure_path_exists(export_location)
         arcpy.AddMessage(
             'Creating temp workspace: {}/{}_data.gdb'.format(export_location, file_name))
         arcpy.CreateFileGDB_management(
