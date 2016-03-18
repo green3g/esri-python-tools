@@ -25,13 +25,13 @@ def update_layer(layer, field, value, new_value):
             cursor.updateRow(row);
     except(RuntimeError):
         del cursor
-        return 'Error on field: {}, where {} = \'{}\''.format( field, field, value )
+        return "Error modifying table {}".format(layer)
 
     return 'Layer Updated: {}'.format(layer)
 
-def get_layer_names():
+def get_layer_names(map='Map'):
     doc = ArcGISProject('current')
-    m = doc.listMaps('Map')[0]
+    m = doc.listMaps(map)[0]
     return [l.name for l in m.listLayers()]
 
 def main():
@@ -50,6 +50,12 @@ class MultipleLayerUpdater(object):
 
     def getParameterInfo(self):
         return [Parameter(
+            displayName='Map',
+            name='map',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input'
+        ),Parameter(
             displayName='Field',
             name='field',
             datatype='GPString',
@@ -70,7 +76,7 @@ class MultipleLayerUpdater(object):
         )]
 
     def execute(self, parameters, messages):
-        layers= get_layer_names()
+        layers= get_layer_names(parameters[0].valueAsText)
         for layer in layers:
             messages.addMessage(
-            update_layer(layer, parameters[0].valueAsText, parameters[1].valueAsText, parameters[2].valueAsText))
+            update_layer(layer, parameters[1].valueAsText, parameters[2].valueAsText,parameters[3].valueAsText))
