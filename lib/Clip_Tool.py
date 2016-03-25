@@ -1,5 +1,5 @@
 import arcpy
-from Esri import Geodatabase
+from .Esri import Geodatabase
 #arcpy toolbox
 #parameter indexes
 clip_from_db = 0
@@ -12,7 +12,7 @@ class Clip(object):
     def __init__(self):
         self.label = 'Clip Geodatabase'
         self.description = """
-            Clip an entire database preserving datasets and 
+            Clip an entire database preserving datasets and
             feature class names
         """
     def getParameterInfo(self):
@@ -50,11 +50,11 @@ class Clip(object):
         to_db = parameters[clip_to_db].valueAsText
         projection = parameters[clip_projection].valueAsText
         clip_layer = parameters[clip_clip_layer].valueAsText
-        
+
         #run the functions
         Geodatabase.clean(to_db)
         self.clip(from_db, to_db, projection, clip_layer)
-        
+
     def clip(self, from_db, to_db, projection, clip_layer):
         """reprojects an entire geodatabase's datasets"""
         if not arcpy.Exists(projection):
@@ -68,15 +68,15 @@ class Clip(object):
             if arcpy.Exists(to_feature_path):
                 arcpy.AddMessage('Skipping feature class {} because it already exists'.format(to_feature_path))
                 return
-            
+
             arcpy.AddMessage('Clipping Featureclass: {}'.format(from_feature_path))
-            arcpy.Clip_analysis('{}/{}'.format(from_dataset_path, feature_class), 
+            arcpy.Clip_analysis('{}/{}'.format(from_dataset_path, feature_class),
                 clip_layer, 'in_memory/{}'.format(feature_class))
             arcpy.FeatureClassToFeatureClass_conversion(
                 'in_memory/{}'.format(feature_class), to_dataset_path, feature_class)
             arcpy.Delete_management('in_memory/{}'.format(feature_class))
-            
-        Geodatabase.process_datasets(from_db, 
-            to_db, 
-            projection, 
+
+        Geodatabase.process_datasets(from_db,
+            to_db,
+            projection,
             foreach_layer=foreach_layer)
