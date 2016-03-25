@@ -8,7 +8,7 @@ def polygon_to_point(input_fc, output_fc):
     """
 
     oid_field = Describe(input_fc).OIDFieldName
-    new_field = 'Related_OID'
+    new_field = 'Rel_OID'
 
     AddField_management(output_fc, new_field, 'Long')
 
