@@ -37,7 +37,7 @@ class PolygonCentroidToPoint(object):
             displayName='Output Points Layer',
             name='output_fc',
             datatype='DEFeatureClass',
-            parameterType='Derived',
+            parameterType='Required',
             direction='Output'
         )]
 
