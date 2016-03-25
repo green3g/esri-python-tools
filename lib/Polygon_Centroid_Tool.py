@@ -13,32 +13,33 @@ class PolygonCentroidToPoint(object):
         Define the tool (tool name is the name of the class).
         """
         self.label = "Polygon Centroid To Point"
+        self.description = 'Converts a polygon into point feature class using the polygon centroid'
         self.canRunInBackground = True
 
     def getParameterInfo(self):
-        """Define parameter definitions"""
-        params = [
-            Parameter(
-                displayName='Input Polygon Layer',
-                name='input_fc',
-                datatype='DEFeatureClass',
-                paramterType='Required',
-                direction='Input'
-            ),
-            Parameter(
-                displayName='Use input as template',
-                name='use_template',
-                datatype='GPBoolean',
-                direction='Input'
-            ),
-            Parameter(
-                displayName='Output Points Layer',
-                name='output_fc',
-                datatype='DEFeatureClass',
-                paramterType='Derived',
-                direction='Output'
-            )
-        ]
+        """
+        Define parameter definitions
+        """
+        params = [Parameter(
+            displayName='Input Polygon Layer',
+            name='input_fc',
+            datatype='DEFeatureClass',
+            paramterType='Required',
+            direction='Input'
+        ),
+        Parameter(
+            displayName='Use input as template',
+            name='use_template',
+            datatype='GPBoolean',
+            direction='Input'
+        ),
+        Parameter(
+            displayName='Output Points Layer',
+            name='output_fc',
+            datatype='DEFeatureClass',
+            paramterType='Derived',
+            direction='Output'
+        )]
 
         params[_use_template].value = False
         return params
