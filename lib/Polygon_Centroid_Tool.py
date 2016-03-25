@@ -24,7 +24,7 @@ class PolygonCentroidToPoint(object):
             displayName='Input Polygon Layer',
             name='input_fc',
             datatype='DEFeatureClass',
-            paramterType='Required',
+            parameterType='Required',
             direction='Input'
         ),
         Parameter(
@@ -37,7 +37,7 @@ class PolygonCentroidToPoint(object):
             displayName='Output Points Layer',
             name='output_fc',
             datatype='DEFeatureClass',
-            paramterType='Derived',
+            parameterType='Derived',
             direction='Output'
         )]
 
