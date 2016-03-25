@@ -1,5 +1,5 @@
 import arcpy
-from .Esri import Geodatabase
+from .esri import Geodatabase
 
 #arcpy toolbox
 #parameter indexes

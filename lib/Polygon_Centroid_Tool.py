@@ -1,11 +1,11 @@
 from arcpy import Parameter, CreateFeatureclass_management, Describe
-from os.path import dirname
-from .Esri.Geometry import polygon_to_point
+from os.path import split
+from .esri.Geometry import polygon_to_point
 
 #paramter indexes
-input_fc = 0
-output_fc = 1
-use_template = 2
+_input_fc = 0
+_use_template = 1
+_output_fc = 2
 
 class PolygonCentroidToPoint(object):
     def __init__(self):
@@ -40,30 +40,15 @@ class PolygonCentroidToPoint(object):
             )
         ]
 
-        params[use_template].value = False
+        params[_use_template].value = False
         return params
 
-    def isLicensed(self):
-        """Set whether tool is licensed to execute."""
-        return True
-
-    def updateParameters(self, parameters):
-        """Modify the values and properties of parameters before internal
-        validation is performed.  This method is called whenever a parameter
-        has been changed."""
-        return
-
-    def updateMessages(self, parameters):
-        """Modify the messages created by internal validation for each tool
-        parameter.  This method is called after internal validation."""
-        return
-
-    def execute(self, parameters, messages):
+    def execute(self, params, messages):
         """The source code of the tool."""
-        input_fc = parameters[input_fc].valueAsText
-        output_fc = parameters[output_fc].valueAsText
-        output_projection = parameters[output_projection].valueAsText
-        use_template = parameters[use_template].valueAsText
+        input_fc = params[_input_fc].valueAsText
+        output_fc = params[_output_fc].valueAsText
+        use_template = params[_use_template].valueAsText
+        
         template = None
         if use_template == 'true':
             template = input_fc
