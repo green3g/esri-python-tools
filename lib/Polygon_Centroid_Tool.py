@@ -1,5 +1,5 @@
 from arcpy import Parameter, CreateFeatureclass_management, Describe
-from os.path import split
+from os.path import split as Split_Path
 from .esri.Geometry import polygon_to_point
 
 #paramter indexes
@@ -44,23 +44,25 @@ class PolygonCentroidToPoint(object):
         return params
 
     def execute(self, params, messages):
-        """The source code of the tool."""
+        """
+        The source code of the tool
+        """
         input_fc = params[_input_fc].valueAsText
         output_fc = params[_output_fc].valueAsText
         use_template = params[_use_template].valueAsText
-        
+
         template = None
         if use_template == 'true':
             template = input_fc
 
         #get the directory, filename, and spatial reference
         sp_ref = Describe(input_fc).spatialReference
-        directory, filename = split(output_fc)
+        directory, filename = Split_Path(output_fc)
 
         #create a new feature class
-        messages.AddMessage('Creating feature class {}'.format(output_fc))
-        CreateFeatureclass_management(directory, filename, 'Point', template, 'No', 'No', sp_ref)
+        messages.addMessage('Creating feature class {}'.format(output_fc))
+        CreateFeatureclass_management(directory, filename, 'POINT', template, 'DISABLED', 'DISABLED', sp_ref)
 
         #copy the geometry centroid
-        messages.AddMessage('Copying polygon centroids...')
+        messages.addMessage('Copying polygon centroids...')
         polygon_to_point(input_fc, output_fc)
