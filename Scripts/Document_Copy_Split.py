@@ -50,7 +50,7 @@ def copy_layer_filepath(layer, output_base, fields, log_file=None):
             page_num = 0
         if not page_num in file_list[doc_id]['pages']:
             file_list[doc_id]['pages'].append(page_num)
-            
+
     for plan, props in file_list.iteritems():
         input_folder = props['folder']
         pages = props['pages']
@@ -71,16 +71,26 @@ def copy_layer_filepath(layer, output_base, fields, log_file=None):
     print '----Done-----!\n\n'
 
 if __name__ == '__main__':
-    #production!
-    output_location = 'Y:/apps/geomoose2/htdocs/utility_plans'
-    join_table = 'M:/_PLAN_INDEX.xls/_PLAN_INDEX$'
-    #development
-    # output_location = 'C:/temp_data/utility_plans'
-    # join_table = 'N:/BaseData/Revising/faribault.gdb/Document_Links'
-    folder_path = "_PLAN_INDEX$.Folder_Path"
-    file_name = "_PLAN_INDEX$.File_Name"
+    # location to copy the documents
+    output_location = '//my-network/output_location'
+
+    # table to join the data to
+    join_table = 'C:/data.gdb/documents_table'
+
+    #field in the join table that references folder's path
+    folder_field = "_PLAN_INDEX$.Folder_Path"
+
+    # field in the join table that references the documents file name
+    file_field = "_PLAN_INDEX$.File_Name"
+
+    # field in the join table that references the document id
+    # this is the join field
     document_id = "_PLAN_INDEX$.Document_ID"
-    layer_path = 'N:/BaseData/Revising/faribault.gdb'
+
+    #  the input workspace for layers to join to the join table
+    workspace = 'C:/data.gdb'
+
+    # the layers to iterate through
     layers = [
         'UtilitySanitary/sswr_pipe',
         'UtilitySanitary/sswr_struc',
@@ -89,66 +99,17 @@ if __name__ == '__main__':
         'UtilityWater/water_struc',
         'UtilityWater/water_pipe',
     ]
-    arcpy.MakeTableView_management(join_table, "plans")
+    arcpy.MakeTableView_management(join_table, 'plans')
     for layer in layers:
         fields = [
-            folder_path,
-            file_name,
+            folder_field,
+            file_field,
             document_id,
             '{}.Plan_Page_Number'.format(layer.split('/')[1])
         ]
         log_file = open('C:/temp_data/errors/{}.csv'.format(layer.replace('/', '')), 'w')
         layer_name = layer.split('/')[1]
-        arcpy.MakeFeatureLayer_management(join(layer_path, layer), layer_name)
+        arcpy.MakeFeatureLayer_management(join(workspace, layer), layer_name)
         arcpy.AddJoin_management(layer_name, 'Plan_ID', 'plans', 'Document_ID', 'KEEP_COMMON')
         copy_layer_filepath(layer_name, output_location, fields, log_file)
         log_file.close()
-
-# # a logger for Arcpy
-# class ArcpyMessageLogger(object):
-#     def write(self, text):
-#         AddMessage(text)
-#
-# # parameter indexes. Change here once and be done
-# # when updating parameter order
-# p_layer = 0
-# p_file_field = 1
-# class Filepath_Checker(object):
-#     """
-#     Iterates through a field and checks to see
-#     if filepath exists in the specified location
-#     """
-#     def __init__(self):
-#         self.label = 'Filepath Exists Tool'
-#         self.description =
-#     def getParameterInfo(self):
-#         params = [
-#             Parameter(
-#                 displayName='Layer',
-#                 name='layer',
-#                 direction='Input',
-#                 datatype='GPLayer',
-#                 parameterType='Required',
-#             ),
-#             Parameter(
-#                 displayName='File Field',
-#                 name='file_field',
-#                 direction='Input',
-#                 datatype='GPString',
-#                 parameterType='Optional',
-#             )
-#         ]
-#
-#         params[p_file_field].filter.type = 'valueList'
-#         parameters[p_title_field].enabled = False
-#         return params
-#     def updateMessages(self, parameters):
-#         parameters[p_title_field].enabled = True
-#         if not parameters[p_layer].hasError() and parameters[p_layer].valueAsText:
-#             parameters[p_file_field].filter.list = [
-#                 f.baseName for f in arcpy.Describe(parameters[p_layer].valueAsText).fields]
-#         else:
-#             parameters[p_title_field].enabled = False
-#
-#     def execute(self, parameters):
-#         copy_layer_filepath()
