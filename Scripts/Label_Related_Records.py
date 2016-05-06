@@ -1,4 +1,4 @@
-# Calculates the dynamic expression for a layer and can be used
+# Calculates the dynamic expression or label for a layer and can be used
 # to dynamically display related records text for data driven pages
 # or feature labels
 
