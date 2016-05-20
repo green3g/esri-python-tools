@@ -31,7 +31,7 @@ def copy_file(input_folder, destination_folder, filename):
     filepath = join(input_folder, filename)
     #make sure the file exists
     if not isfile(filepath):
-        print ('{} is not a file'.format(filepath))
+        print('{} is not a file'.format(filepath))
         return False
 
     # make sure the output folder exists
@@ -41,7 +41,7 @@ def copy_file(input_folder, destination_folder, filename):
     new_filepath = join(destination_folder, filename)
     if not isfile(new_filepath):
         copyfile(filepath, new_filepath)
-        print ('Created file: {}'.format(new_filepath))
+        print('Created file: {}'.format(new_filepath))
     return True
 
 def extract_page(input_file, number, output_path, filename_formatter=get_page_filename):
@@ -77,7 +77,7 @@ def extract_page(input_file, number, output_path, filename_formatter=get_page_fi
     try:
         page = input_pdf.getPage(number)
     except:
-        'error extracting page from {}'.format(input_file)
+        print('error extracting page from {}'.format(input_file))
         return False
 
     #add the page to the output writer
@@ -88,7 +88,7 @@ def extract_page(input_file, number, output_path, filename_formatter=get_page_fi
         try:
             output_pdf.write(output)
         except:
-            'error while writing output to {}'.format(output_file)
+            print('error while writing output to {}'.format(output_file))
             return False
     return True
 
@@ -105,7 +105,7 @@ def copy_layer_filepath(layer, output_base, fields, log_file=None):
     cursor = SearchCursor(layer, fields)
     print('Scanning layer - {}'.format(layer))
     if log_file:
-        print 'Writing logfile - {}'.format(log_file)
+        print ('Writing logfile - {}'.format(log_file))
         log_file.write('Problem,Layer,Plan,Page\n')
 
     # a dict to keep track of which files/pages to copy
@@ -157,4 +157,4 @@ def copy_layer_filepath(layer, output_base, fields, log_file=None):
             #functions return false if error occurs
             if not extract_page(input_file, page, output_folder) and log_file:
                  log_file.write('Extract page failed,{},{},{} \n'.format(layer, plan, page))
-    print '----Done-----!\n\n'
+    print('----Done-----!\n\n')
