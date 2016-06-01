@@ -20,9 +20,10 @@ Reprojects an entire geodatabase using a specified projection file. Layers not i
 
 ### Polygon Centroid Tool
  - Copies a polygon feature class's centroid geometry into a new feature class
- - Adds field `Rel_OID` type `Long` which represents the object id of the polygon 
+ - Adds field `Rel_OID` type `Long` which represents the object id of the polygon
 
 ### Line Endpoint Tool
+![screenshot](img/line_endpoint.PNG)
  - Copies the start and endpoint of lines into a new feature class
  - Adds field `related_oid` type `Long` which represents the object id of the line feature
  - Adds field `point_type` type `Text` which will either be value `START` or `END`
