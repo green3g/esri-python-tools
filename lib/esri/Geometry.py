@@ -22,3 +22,28 @@ def polygon_to_point(input_fc, output_fc):
         insert_cursor.insertRow([point, oid])
 
     del search_cursor, insert_cursor, spatial_reference
+
+def line_to_endpoints(input_fc, output_fc):
+    """
+    copies the endpoints of a feature class into a point
+    feature class
+    """
+
+    oid_field = Describe(input_fc).OIDFieldName
+    related_field = 'related_oid'
+    type_field = 'point_type'
+    AddField_management(output_fc, related_field, 'Long')
+    AddField_management(output_fc, type_field, 'Text')
+
+    search_cursor = SearchCursor(input_fc, ['SHAPE@', oid_field])
+    insert_cursor = InsertCursor(output_fc, ["SHAPE@", related_field, type_field])
+    spatial_reference = Describe(output_fc).spatialReference
+
+    for row in search_cursor:
+        start_point = row[0].projectAs(spatial_reference).firstPoint
+        end_point = row[0].projectAs(spatial_reference).lastPoint
+        oid = row[1]
+        insert_cursor.insertRow([start_point, oid, 'START'])
+        insert_cursor.insertRow([end_point, oid, 'END'])
+
+    del search_cursor, insert_cursor, spatial_reference

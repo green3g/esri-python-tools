@@ -3,6 +3,7 @@ from lib.Data_Updater import MultipleLayerUpdater
 from lib.Clip_Tool import Clip
 from lib.Reproject_Tool import Reproject
 from lib.Polygon_Centroid_Tool import PolygonCentroidToPoint
+from lib.Line_Endpoint_Tool import LineEndPoints
 
 class Toolbox(object):
     def __init__(self):
@@ -14,4 +15,5 @@ class Toolbox(object):
           SiteMapGenerator,
           MultipleLayerUpdater,
           PolygonCentroidToPoint,
+          LineEndPoints,
         ]
