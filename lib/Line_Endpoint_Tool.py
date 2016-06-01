@@ -65,5 +65,5 @@ class LineEndPoints(object):
         CreateFeatureclass_management(directory, filename, 'POINT', template, 'DISABLED', 'DISABLED', sp_ref)
 
         #copy the geometry centroid
-        messages.addMessage('Copying extracting endpoints...')
+        messages.addMessage('Extracting endpoints...')
         line_to_endpoints(input_fc, output_fc)
