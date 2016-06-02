@@ -1,4 +1,4 @@
-from arcpy import Parameter, CreateFeatureclass_management, Describe
+from arcpy import Parameter, CreateFeatureclass_management, Describe, AddMessage
 from os.path import split as Split_Path
 from .esri.Geometry import line_to_endpoints
 
@@ -51,7 +51,9 @@ class LineEndPoints(object):
         input_fc = params[_input_fc].valueAsText
         output_fc = params[_output_fc].valueAsText
         use_template = params[_use_template].valueAsText
+        self.process(input_fc, output_fc, use_template)
 
+    def process(self, input_fc, output_fc, use_template='false'):
         template = None
         if use_template == 'true':
             template = input_fc
@@ -61,9 +63,9 @@ class LineEndPoints(object):
         directory, filename = Split_Path(output_fc)
 
         #create a new feature class
-        messages.addMessage('Creating feature class {}'.format(output_fc))
+        AddMessage('Creating feature class {}'.format(output_fc))
         CreateFeatureclass_management(directory, filename, 'POINT', template, 'DISABLED', 'DISABLED', sp_ref)
 
         #copy the geometry centroid
-        messages.addMessage('Extracting endpoints...')
+        AddMessage('Extracting endpoints...')
         line_to_endpoints(input_fc, output_fc)

@@ -23,17 +23,17 @@ def polygon_to_point(input_fc, output_fc):
 
     del search_cursor, insert_cursor, spatial_reference
 
-def line_to_endpoints(input_fc, output_fc):
+def line_to_endpoints(input_fc, output_fc, id_field=None):
     """
     copies the endpoints of a feature class into a point
     feature class
     """
 
-    oid_field = Describe(input_fc).OIDFieldName
+    oid_field = id_field if id_field else Describe(input_fc).OIDFieldName
     related_field = 'related_oid'
     type_field = 'point_type'
-    AddField_management(output_fc, related_field, 'Long')
-    AddField_management(output_fc, type_field, 'Text')
+    AddField_management(output_fc, related_field, 'LONG')
+    AddField_management(output_fc, type_field, 'TEXT', field_length=10)
 
     search_cursor = SearchCursor(input_fc, ['SHAPE@', oid_field])
     insert_cursor = InsertCursor(output_fc, ["SHAPE@", related_field, type_field])
