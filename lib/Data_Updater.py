@@ -1,12 +1,11 @@
 #-------------------------------------------------------------------------------
-# Name:        module1
-# Purpose:
+# Name:        Data_Updater
+# Purpose:      See tool metadata
 #
 # Author:      groemhildt
 #
 # Created:     17/03/2016
 # Copyright:   (c) groemhildt 2016
-# Licence:     <your licence>
 #-------------------------------------------------------------------------------
 from arcpy.mp import ArcGISProject
 from arcpy.da import UpdateCursor
@@ -14,8 +13,12 @@ from arcpy import Parameter
 
 
 def update_layer(layer, field, value, new_value):
+    if(field and value):
+        where_clause = '{} = \'{}\''.format(field, value)
+    else:
+        where_clause = None
     try:
-        cursor = UpdateCursor(layer, field, '{} = \'{}\''.format(field, value))
+        cursor = UpdateCursor(layer, field, where_clause)
     except(TypeError):
         return "Error loading table {}".format(layer)
 
@@ -32,7 +35,8 @@ def update_layer(layer, field, value, new_value):
 def get_layer_names(map='Map'):
     doc = ArcGISProject('current')
     m = doc.listMaps(map)[0]
-    return [l.name for l in m.listLayers()]
+
+    return [layer.name for layer in map.listLayers() if layer.visible and layer.isFeatureLayer]
 
 def main():
     layers = get_layer_names()
@@ -45,7 +49,10 @@ if __name__ == '__main__':
 class MultipleLayerUpdater(object):
     def __init__(self):
         self.label = 'Multiple Layer Updater'
-        self.alias = 'Updates a field in multiple layers in the current map document with a value'
+        self.description = """
+            Updates a field in multiple layers in the current map document with a value.
+            If the field is not visible or is not a feature layer it will be skipped.
+        """
         self.canRunInBackground = False
 
     def getParameterInfo(self):
