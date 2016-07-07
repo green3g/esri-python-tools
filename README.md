@@ -29,6 +29,10 @@ Reprojects an entire geodatabase using a specified projection file. Layers not i
  - Adds field `point_type` type `Text` which will either be value `START` or `END`
  - See http://pro.arcgis.com/en/pro-app/arcpy/classes/geometry.htm
 
+### Point Elevation Tool
+ - Extracts elevation values at points and calculates them to a field
+ - This may crash ArcMap with large data sets
+
 ## Scripts
 
 ### Calculate Dynamic Expression Related Records

@@ -11,7 +11,7 @@ class PointElevations(object):
     def __init__(self):
         self.label = 'Calculate Point Elevations'
         self.description = 'Adds an elevation field value from a raster dem'
-        self.canRunInBackground = True
+        self.canRunInBackground = False
 
     def getParameterInfo(self):
         """
