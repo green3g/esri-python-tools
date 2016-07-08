@@ -23,31 +23,26 @@ def calculatePointElevationField(points, raster, field_name):
     #monitor progress by counting features
     view = MakeTableView_management(points, 'points')
     count = int(GetCount_management('points').getOutput(0))
-    SetProgressor('step', 'Extracting point elevations', 0, 100)
+    SetProgressor('step', 'Extracting point elevations', 0, count)
     AddMessage('{} features to process'.format(count))
 
     # Get the object id field
     oid = Describe(points).OIDFieldName
 
     # make an update cursor and update each row's elevation field
-    cursor = SearchCursor(points, [oid, 'SHAPE@'])
+    cursor = UpdateCursor(points, [field_name, 'SHAPE@', oid])
 
     # make a temporary dict to store our elevation values we extract
     elevations = {}
 
     for row in cursor:
-        elevations[row[0]] = getElevationAtPoint(raster, row[1])
+        row[0] = getElevationAtPoint(raster, row[1])
+        cursor.updateRow(row)
+        AddMessage('row updated to {}; oid: {}'.format(row[0], row[2]))
         SetProgressorPosition()
+
+    # release the data
+    del cursor
 
     #reset this progressor
     ResetProgressor()
-
-    # calculate the field value
-    AddMessage('Calculating field value for points')
-    codeblock = """
-        elevations = {}
-        def getVal(id):
-            return elevations[id]
-    """.format(elevations)
-    expression = '!{}!'.format(oid)
-    CalculateField_management(points, field_name, expression, 'PYTHON_9.3', code_block)

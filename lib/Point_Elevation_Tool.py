@@ -26,7 +26,7 @@ class PointElevations(object):
         ), Parameter(
             displayName='Input Points Layer',
             name='input_points',
-            datatype='DEFeatureClass',
+            datatype=['DEFeatureClass', 'GPFeatureLayer'],
             parameterType='Required',
             direction='Input'
         ), Parameter(
