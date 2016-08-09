@@ -5,6 +5,7 @@ from lib.Reproject_Tool import Reproject
 from lib.Polygon_Centroid_Tool import PolygonCentroidToPoint
 from lib.Line_Endpoint_Tool import LineEndPoints
 from lib.Point_Elevation_Tool import PointElevations
+from lib.Extract_Attachments_Tool import ExtractAttachments
 
 class Toolbox(object):
     def __init__(self):
@@ -17,5 +18,6 @@ class Toolbox(object):
           MultipleLayerUpdater,
           PolygonCentroidToPoint,
           LineEndPoints,
-          PointElevations
+          PointElevations,
+          ExtractAttachments
         ]

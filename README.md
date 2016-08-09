@@ -33,6 +33,11 @@ Reprojects an entire geodatabase using a specified projection file. Layers not i
  - Extracts elevation values at points and calculates them to a field
  - This may crash ArcMap with large data sets
 
+### Extract attachments tool
+ - Extracts attachments from a table and generates a unique file name for each file
+ - Adds a new field to the table called `file_name` that is updated to the file's unique name
+ - Requires fields `'DATA', 'ATT_NAME', 'ATTACHMENTID'`
+
 ## Scripts
 
 ### Calculate Dynamic Expression Related Records
