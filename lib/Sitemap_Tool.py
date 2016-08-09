@@ -127,7 +127,7 @@ class SiteMapGenerator(object):
             file_name = time.strftime('%m-%d-%y-(%H.%M)')
 
         export_location = os.path.join(export_location, File_Operations)
-        File_Operations.make_sure_path_exists(export_location)
+        File_Operations.verify_path_exists(export_location)
         arcpy.AddMessage(
             'Creating temp workspace: {}/{}_data.gdb'.format(export_location, file_name))
         arcpy.CreateFileGDB_management(

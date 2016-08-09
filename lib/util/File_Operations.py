@@ -6,7 +6,7 @@ from PyPDF2 import PdfFileWriter, PdfFileReader
 from shutil import copyfile
 from arcpy.da import SearchCursor
 
-def make_sure_path_exists(path):
+def verify_path_exists(path):
     try:
         makedirs(path)
     except OSError as exception:
@@ -35,7 +35,7 @@ def copy_file(input_folder, destination_folder, filename):
         return False
 
     # make sure the output folder exists
-    make_sure_path_exists(destination_folder)
+    verify_path_exists(destination_folder)
 
     #copy the file
     new_filepath = join(destination_folder, filename)
@@ -64,7 +64,7 @@ def extract_page(input_file, number, output_path, filename_formatter=get_page_fi
     if not output_path:
         output_path = file_parts[0]
     output_file = join(output_path, filename_formatter(file_name, number).strip('/'))
-    make_sure_path_exists(split(output_file)[0])
+    verify_path_exists(split(output_file)[0])
     if exists(output_file):
         return True
 
