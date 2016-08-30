@@ -112,10 +112,8 @@ def copy_layer_filepath(layer, output_base, fields, log_file=None):
     # each key references a file, and the value is a list of pages to copy
     file_list = {}
     for row in cursor:
-        folder = row[0]
-        name = row[1]
-        doc_id = row[2]
-        page_num = row[3]
+        #unpack row
+        folder, name, doc_id, page_num = row
 
         plan = join(folder, name)
 
@@ -151,10 +149,11 @@ def copy_layer_filepath(layer, output_base, fields, log_file=None):
         #log errors
         if not copy_file(input_folder, output_folder, filename) and log_file:
             log_file.write('Copy file failed,{},{},{} \n'.format(layer, plan, -99))
-        for page in pages:
-            # and split the pages
-            #log errors for future purposes
-            #functions return false if error occurs
-            if not extract_page(input_file, page, output_folder) and log_file:
-                 log_file.write('Extract page failed,{},{},{} \n'.format(layer, plan, page))
+        if filename.split('.')[-1].upper() == 'PDF':
+            for page in pages:
+                # and split the pages
+                #log errors for future purposes
+                #functions return false if error occurs
+                if not extract_page(input_file, page, output_folder) and log_file:
+                     log_file.write('Extract page failed,{},{},{} \n'.format(layer, plan, page))
     print('----Done-----!\n\n')
