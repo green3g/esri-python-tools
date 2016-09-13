@@ -1,5 +1,4 @@
-import arcpy
-from .esri import Geodatabase
+from arcpy import Parameter
 #arcpy toolbox
 #parameter indexes
 clip_from_db = 0
@@ -16,25 +15,25 @@ class Clip(object):
             feature class names
         """
     def getParameterInfo(self):
-        return [arcpy.Parameter(
+        return [Parameter(
             displayName = 'From Database',
             name = 'from_db',
             direction = 'Input',
             datatype = 'Workspace',
             parameterType = 'Required',
-        ), arcpy.Parameter(
+        ), Parameter(
             displayName = 'To Database (Existing features in here will be deleted!)',
             name = 'to_db',
             direction = 'Input',
             datatype = 'Workspace',
             parameterType = 'Required',
-        ), arcpy.Parameter(
+        ), Parameter(
             displayName = 'Projection File',
             name = 'projection',
             direction = 'Input',
             datatype = 'DEPrjFile',
             parameterType = 'Required',
-        ), arcpy.Parameter(
+        ), Parameter(
             displayName = 'Clipping Layer',
             name = 'clip_layer',
             direction = 'Input',
@@ -42,7 +41,11 @@ class Clip(object):
             parameterType = 'Required',
         )]
     def execute(self, parameters, messages):
-        arcpy.AddMessage('{}; {}; {};'.format(
+
+        from .esri import Geodatabase
+        from arcpy import AddMessage, Exists, Clip_analysis, Delete_management, FeatureClassToFeatureClass_conversion
+
+        AddMessage('{}; {}; {};'.format(
             parameters[clip_from_db].valueAsText,
             parameters[clip_to_db].valueAsText,
             parameters[clip_projection].valueAsText))
@@ -53,28 +56,25 @@ class Clip(object):
 
         #run the functions
         Geodatabase.clean(to_db)
-        self.clip(from_db, to_db, projection, clip_layer)
 
-    def clip(self, from_db, to_db, projection, clip_layer):
-        """reprojects an entire geodatabase's datasets"""
-        if not arcpy.Exists(projection):
-            arcpy.AddMessage('Projection file {} does not exist'.format(projection))
+        if not Exists(projection):
+            AddMessage('Projection file {} does not exist'.format(projection))
             return
         def foreach_layer(from_dataset_path, to_dataset_path, feature_class):
             from_feature_path = '{}/{}'.format(from_dataset_path, feature_class)
             to_feature_path = '{}/{}'.format(to_dataset_path, feature_class)
-            arcpy.AddMessage('Copying Featureclass: {}'.format(from_feature_path))
+            AddMessage('Copying Featureclass: {}'.format(from_feature_path))
 
-            if arcpy.Exists(to_feature_path):
-                arcpy.AddMessage('Skipping feature class {} because it already exists'.format(to_feature_path))
+            if Exists(to_feature_path):
+                AddMessage('Skipping feature class {} because it already exists'.format(to_feature_path))
                 return
 
-            arcpy.AddMessage('Clipping Featureclass: {}'.format(from_feature_path))
-            arcpy.Clip_analysis('{}/{}'.format(from_dataset_path, feature_class),
+            AddMessage('Clipping Featureclass: {}'.format(from_feature_path))
+            Clip_analysis('{}/{}'.format(from_dataset_path, feature_class),
                 clip_layer, 'in_memory/{}'.format(feature_class))
-            arcpy.FeatureClassToFeatureClass_conversion(
+            FeatureClassToFeatureClass_conversion(
                 'in_memory/{}'.format(feature_class), to_dataset_path, feature_class)
-            arcpy.Delete_management('in_memory/{}'.format(feature_class))
+            Delete_management('in_memory/{}'.format(feature_class))
 
         Geodatabase.process_datasets(from_db,
             to_db,

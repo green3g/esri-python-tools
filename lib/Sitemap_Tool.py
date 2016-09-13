@@ -1,10 +1,4 @@
-import arcpy
-import csv
-import os
-import time
-from subprocess import Popen
-from .esri import Extent, MapDocument
-from .util import String, File_Operations
+from arcpy import Parameter
 
 ###
 # Esri Toolbox
@@ -45,37 +39,37 @@ class SiteMapGenerator(object):
         self.canRunInBackground = False
 
     def getParameterInfo(self):
-        params = [arcpy.Parameter(
+        params = [Parameter(
             displayName='Layer',
             name='layer',
             direction='Input',
             datatype='GPLayer',
             parameterType='Required',
-        ), arcpy.Parameter(
+        ), Parameter(
             displayName='Export Folder',
             name='export_location',
             direction='Input',
             datatype='DEFolder',
             parameterType='Required',
-        ), arcpy.Parameter(
+        ), Parameter(
             displayName='Buffer Distance (include units, example: 350 Feet)',
             name='buffer_dist',
             direction='Input',
             datatype='GPString',
             parameterType='Optional',
-        ), arcpy.Parameter(
+        ), Parameter(
             displayName='Document Title and Export Folder (Insert Document Title into layout)',
             name='title',
             direction='Input',
             datatype='GPString',
             parameterType='Optional',
-        ), arcpy.Parameter(
+        ), Parameter(
             displayName='Include individual maps of selected features?',
             name='individual',
             direction='Input',
             datatype='GPBoolean',
             parameterType='Required',
-        ), arcpy.Parameter(
+        ), Parameter(
             displayName='Title Field (field to use as individual map document title)',
             name='title_field',
             direction='Input',
@@ -95,13 +89,22 @@ class SiteMapGenerator(object):
     def updateMessages(self, parameters):
         if not parameters[p_layer].hasError() and parameters[p_layer].valueAsText:
             parameters[p_title_field].filter.list = [
-                f.baseName for f in arcpy.Describe(parameters[p_layer].valueAsText).fields]
+                f.baseName for f in Describe(parameters[p_layer].valueAsText).fields]
 
         parameters[p_title_field].enabled = (
             parameters[p_individual].valueAsText == 'true')
 
     def execute(self, parameters, messages):
         """generates the site map pdf and csv files"""
+
+        from arcpy.da import SearchCursor
+        from arcpy import AddMessage, CreateFileGDB_management, FeatureClassToFeatureClass_conversion, SelectLayerByAttribute_management, mapping
+        import csv
+        import os
+        import time
+        from subprocess import Popen
+        from .esri import Extent, MapDocument
+        from .util import String, File_Operations
 
         # set up local vars for easy access
         layer = parameters[p_layer].valueAsText
@@ -110,10 +113,10 @@ class SiteMapGenerator(object):
         title_field = parameters[p_title_field].valueAsText
         individual = parameters[p_individual].valueAsText
         document_title = parameters[p_title].valueAsText
-        current_document = arcpy.mapping.MapDocument("CURRENT")
-        data_frame = arcpy.mapping.ListDataFrames(current_document)[0]
+        current_document = mapping.MapDocument("CURRENT")
+        data_frame = mapping.ListDataFrames(current_document)[0]
 
-        arcpy.AddMessage("""layer={}; export_location={}; buffer_dist={};
+        AddMessage("""layer={}; export_location={}; buffer_dist={};
                 title_field={}; individual={}; document_title={};""".format(
             layer, export_location, buffer_dist, title_field, individual,
             document_title))
@@ -128,9 +131,9 @@ class SiteMapGenerator(object):
 
         export_location = os.path.join(export_location, File_Operations)
         File_Operations.verify_path_exists(export_location)
-        arcpy.AddMessage(
+        AddMessage(
             'Creating temp workspace: {}/{}_data.gdb'.format(export_location, file_name))
-        arcpy.CreateFileGDB_management(
+        CreateFileGDB_management(
             export_location, '{}_data.gdb'.format(file_name))
         file_gdb = '{}/{}_data.gdb'.format(export_location, file_name)
 
@@ -138,27 +141,27 @@ class SiteMapGenerator(object):
         current_document.activeView = 'PAGE_LAYOUT'
 
         # export the selected features
-        arcpy.AddMessage(
+        AddMessage(
             'Exporting: layer={}, {}/selected'.format(layer, file_gdb))
-        arcpy.FeatureClassToFeatureClass_conversion(
+        FeatureClassToFeatureClass_conversion(
             layer, file_gdb, 'selected')
 
         # perform buffer if necessary
         if buffer_dist:
             # buffer and select features
-            arcpy.AddMessage(
+            AddMessage(
                 'Buffering and Selecting: layer={}, {}/buffer'.format(layer, file_gdb))
-            arcpy.Buffer_analysis(layer, '{}/buffer'.format(file_gdb),
+            Buffer_analysis(layer, '{}/buffer'.format(file_gdb),
                                   buffer_dist, 'FULL', 'ROUND', 'ALL')
-            arcpy.SelectLayerByLocation_management(layer, 'INTERSECT',
+            SelectLayerByLocation_management(layer, 'INTERSECT',
                                                    '{}/buffer'.format(file_gdb), 0, 'NEW_SELECTION')
             buffer = MapDocument.add_map_layer('{}/buffer'.format(file_gdb),
                                                symbols['orange'], '{} Buffer'.format(buffer_dist))
 
         # export the selected features
-        arcpy.AddMessage(
+        AddMessage(
             'Exporting: layer={}, {}/buffer_selected'.format(layer, file_gdb))
-        arcpy.FeatureClassToFeatureClass_conversion(
+        FeatureClassToFeatureClass_conversion(
             layer, file_gdb, 'buffer_selected')
         buffer_selected = MapDocument.add_map_layer('{}/buffer_selected'.format(file_gdb),
                                                     symbols['gray'], 'Buffered Features')
@@ -168,17 +171,17 @@ class SiteMapGenerator(object):
                                              symbols['red'], 'Selected Features')
 
         # prep output pdf
-        final_pdf = arcpy.mapping.PDFDocumentCreate(os.path.join(
+        final_pdf = mapping.PDFDocumentCreate(os.path.join(
             export_location, '{}_Final.pdf'.format(file_name)))
-        arcpy.AddMessage('exporting pdf file {}_Final.pdf to {}'.format(
+        AddMessage('exporting pdf file {}_Final.pdf to {}'.format(
             file_name, export_location))
         data_frame.extent = Extent.expand(buffer_selected.getExtent(), 10)
         current_document.title = document_title
-        arcpy.SelectLayerByAttribute_management(layer, "CLEAR_SELECTION")
+        SelectLayerByAttribute_management(layer, "CLEAR_SELECTION")
         MapDocument.export_and_append(export_location, final_pdf)
 
         rows = []
-        cursor = arcpy.da.SearchCursor(
+        cursor = SearchCursor(
             '{}/buffer_selected'.format(file_gdb, file_name), ['SHAPE@', '*'])
         for row in cursor:
             rows.append(row)
@@ -191,7 +194,7 @@ class SiteMapGenerator(object):
             MapDocument.export_and_append(export_location, final_pdf)
 
         # write out csv rows
-        arcpy.AddMessage('Exporting csv: {}_output.csv to {}'.format(
+        AddMessage('Exporting csv: {}_output.csv to {}'.format(
             file_name, export_location))
         # open csv file as binary so it avoids windows empty lines
         csv_output = open(os.path.join(

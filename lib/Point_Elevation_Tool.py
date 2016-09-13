@@ -1,6 +1,4 @@
 from arcpy import Parameter
-from arcpy import AddField_management
-from .esri.Raster import calculatePointElevationField
 
 #parameter indexes
 _input_raster = 0
@@ -54,5 +52,7 @@ class PointElevations(object):
         creates a new field called point_elevation on the feature class
         and populates it with values from the raster at the intersection
         """
+        from arcpy import AddField_management
+        from .esri.Raster import calculatePointElevationField
         AddField_management(input_points, field_name, "FLOAT")
         calculatePointElevationField(input_points, input_raster, field_name)
