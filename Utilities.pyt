@@ -6,6 +6,7 @@ from lib.Polygon_Centroid_Tool import PolygonCentroidToPoint
 from lib.Line_Endpoint_Tool import LineEndPoints
 from lib.Point_Elevation_Tool import PointElevations
 from lib.Extract_Attachments_Tool import ExtractAttachments
+from lib.FTP_Mirror_Tool import FTPMirror
 
 class Toolbox(object):
     def __init__(self):
@@ -20,4 +21,5 @@ class Toolbox(object):
           LineEndPoints,
           PointElevations,
           ExtractAttachments
+          FTPMirror
         ]
