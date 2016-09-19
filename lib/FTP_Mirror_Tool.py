@@ -13,13 +13,47 @@ _ftp_server = 2
 _ftp_username = 3
 _ftp_password = 4
 
+def retrieve_directory_recursive(ftp, output_folder, directory):
+    """
+    recursively retrieves files from an ftp directory
+    """
+    from os.path import join
+    from util.File_Operations import verify_path_exists
+    from arcpy import AddMessage
+
+    verify_path_exists(output_folder)
+    AddMessage('Navigating to {}'.format(directory))
+    ftp.cwd(directory)
+    ftp.retrlines('LIST')
+
+    AddMessage('Accessing files')
+    filenames = ftp.nlst() # get filenames within the directory
+    AddMessage(filenames)
+    dirs = []
+    for filename in filenames:
+        AddMessage('Processing file: {}'.format(filename))
+        local_filename = join(output_folder, filename)
+
+        #if its a directory
+        if len(filename.split('.')) == 1:
+            dirs.append(local_filename)
+        else:
+            file = open(local_filename, 'wb')
+            ftp.retrbinary('RETR '+ filename, file.write)
+
+            file.close()
+    #navigate sub directories
+    for dir in dirs:
+        folder = join(output_folder, dir)
+        retrieve_directory_recursive(ftp, folder, dir)
+
 class FTPMirror(object):
     def __init__(self):
         """
         Define the tool (tool name is the name of the class).
         """
-        self.label = "Extract Polyline Endpoints"
-        self.description = 'Converts a polyline geometry into start and endpoints'
+        self.label = "Mirror FTP Directory"
+        self.description = 'Downloads an ftp directory to a local drive'
         self.canRunInBackground = True
 
     def getParameterInfo(self):
@@ -64,10 +98,9 @@ class FTPMirror(object):
         ftp_server = params[_ftp_server].valueAsText
         ftp_username = params[_ftp_username].valueAsText
         ftp_password = params[_ftp_password].valueAsText
-        from arcpy import AddMessage
-        self.process(output_folder, ftp_folder, ftp_server, ftp_username, ftp_password, AddMessage)
+        self.process(output_folder, ftp_folder, ftp_server, ftp_username, ftp_password)
 
-    def process(self, output_folder, ftp_folder, ftp_server, ftp_username=None, ftp_password=None, AddMessage):
+    def process(self, output_folder, ftp_folder, ftp_server, ftp_username=None, ftp_password=None):
         """
         connects to an ftp server and downloads a directory
             output_folder - The local path to the download directory
@@ -79,26 +112,12 @@ class FTPMirror(object):
         """
 
         from ftplib import FTP
-        from os.path import join
+        from arcpy import AddMessage
 
         ftp = FTP(ftp_server)
 
         AddMessage('Logging in.')
         ftp.login(ftp_username, ftp_password)
+        retrieve_directory_recursive(ftp, output_folder, ftp_folder)
 
-        AddMessage('Navigating to {}'.format(ftp_folder))
-        ftp.cwd(ftp_folder)
-        ftp.retrlines('LIST')
-
-        AddMessage('Accessing files')
-        filenames = ftp.nlst() # get filenames within the directory
-        AddMessage(filenames)
-
-        for filename in filenames:
-            local_filename = join(output_folder, filename)
-            file = open(local_filename, 'wb')
-            ftp.retrbinary('RETR '+ filename, file.write)
-
-            file.close()
-
-        ftp.quit() # This is the “polite” way to close a connection
+        ftp.quit() # This is the polite way to close a connection

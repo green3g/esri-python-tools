@@ -21,5 +21,5 @@ class Toolbox(object):
           LineEndPoints,
           PointElevations,
           ExtractAttachments
-          FTPMirror
+          FTPMirror,
         ]
