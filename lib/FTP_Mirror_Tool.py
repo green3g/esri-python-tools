@@ -19,12 +19,16 @@ def retrieve_directory_recursive(ftp, output_folder, directory):
     """
     from os.path import join
     from util.File_Operations import verify_path_exists
-    from arcpy import AddMessage
+    from arcpy import AddMessage, AddWarning
 
     verify_path_exists(output_folder)
     AddMessage('Navigating to {}'.format(directory))
-    ftp.cwd(directory)
-    ftp.retrlines('LIST')
+    try:
+        ftp.cwd(directory)
+        ftp.retrlines('LIST')
+    except Exception as inst:
+        AddWarning('Could not access the directory: {}'.format(directory))
+        return
 
     AddMessage('Accessing files')
     filenames = ftp.nlst() # get filenames within the directory
