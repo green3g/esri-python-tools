@@ -23,15 +23,16 @@ def retrieve_directory_recursive(ftp, output_folder, directory):
 
     verify_path_exists(output_folder)
     AddMessage('Navigating to {}'.format(directory))
+    filenames = None
     try:
         ftp.cwd(directory)
         ftp.retrlines('LIST')
+        AddMessage('Accessing files')
+        filenames = ftp.nlst() # get filenames within the directory
     except Exception as inst:
         AddWarning('Could not access the directory: {}'.format(directory))
         return
 
-    AddMessage('Accessing files')
-    filenames = ftp.nlst() # get filenames within the directory
     AddMessage(filenames)
     dirs = []
     for filename in filenames:
