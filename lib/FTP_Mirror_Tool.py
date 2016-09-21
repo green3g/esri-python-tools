@@ -41,7 +41,7 @@ def retrieve_directory_recursive(ftp, output_folder, directory):
 
         #if its a directory
         if len(filename.split('.')) == 1:
-            dirs.append(local_filename)
+            dirs.append(join(directory, filename))
         else:
             file = open(local_filename, 'wb')
             ftp.retrbinary('RETR '+ filename, file.write)
