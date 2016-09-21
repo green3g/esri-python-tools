@@ -48,9 +48,9 @@ def retrieve_directory_recursive(ftp, output_folder, directory):
 
             file.close()
     #navigate sub directories
-    for dir in dirs:
-        folder = join(output_folder, dir)
-        retrieve_directory_recursive(ftp, folder, dir)
+    for d in dirs:
+        folder = join(output_folder, d)
+        retrieve_directory_recursive(ftp, folder, d)
 
 class FTPMirror(object):
     def __init__(self):
