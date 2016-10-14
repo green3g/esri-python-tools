@@ -27,7 +27,7 @@ date_object = date.today()
 year = date_object.strftime("%Y")
 
 # default tool field values
-d_layer = 'Parcel Boundaries'
+d_layer = 'Mailing Parcels'
 d_export_location = 'N:/PlanningZoning/SiteMaps/{}'.format(year)
 d_buffer_dist = '350 Feet'
 
@@ -208,7 +208,17 @@ class SiteMapGenerator(object):
 
         #set the title
         current_document.title = document_title
-        arcpy.SelectLayerByAttribute_management(layer, "CLEAR_SELECTION")
+
+        # clear selection in layers with selected rows
+        for l in arcpy.mapping.ListLayers(current_document):
+            try:
+                if arcpy.Describe(l).fidSet != '':
+                    # throws errors on mosaic layers
+                    arcpy.SelectLayerByAttribute_management(l, "CLEAR_SELECTION")
+            except:
+                pass
+                
+        # export
         MapDocument.export_and_append(export_location, final_pdf)
 
         rows = []
