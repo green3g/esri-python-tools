@@ -1,4 +1,5 @@
-from arcpy import Parameter
+from arcpy import Parameter, AddField_management
+from lib.esri.Attachments import extract_attachments
 
 #parameter indexes
 _attach_table = 0
@@ -45,9 +46,6 @@ class ExtractAttachments(object):
         the output path.
         """
 
-        from arcpy import AddField_management
-        from .esri.Attachments import extract_attachments
-        
         # add a file name field
         AddField_management(attach_table, 'file_name', "TEXT", field_length=50)
 

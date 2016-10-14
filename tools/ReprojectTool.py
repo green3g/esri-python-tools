@@ -1,4 +1,6 @@
 from arcpy import Parameter
+from lib.esri import Geodatabase
+from arcpy import AddMessage, Exists, FeatureClassToFeatureClass_conversion
 
 #arcpy toolbox
 #parameter indexes
@@ -42,9 +44,6 @@ class Reproject(object):
         from_db = parameters[reproject_from_db].valueAsText
         to_db = parameters[reproject_to_db].valueAsText
         projection = parameters[reproject_projection].valueAsText
-
-        from .esri import Geodatabase
-        from arcpy import AddMessage, Exists, FeatureClassToFeatureClass_conversion
 
         #run the functions
         Geodatabase.clean(to_db)

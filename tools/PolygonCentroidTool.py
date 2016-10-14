@@ -1,4 +1,7 @@
 from arcpy import Parameter
+from arcpy import CreateFeatureclass_management, Describe
+from os.path import split as Split_Path
+from lib.esri.Geometry import polygon_to_point
 
 #paramter indexes
 _input_fc = 0
@@ -53,10 +56,6 @@ class PolygonCentroidToPoint(object):
         template = None
         if use_template == 'true':
             template = input_fc
-
-        from arcpy import CreateFeatureclass_management, Describe
-        from os.path import split as Split_Path
-        from .esri.Geometry import polygon_to_point
 
         #get the directory, filename, and spatial reference
         sp_ref = Describe(input_fc).spatialReference

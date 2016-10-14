@@ -1,4 +1,6 @@
-from arcpy import Parameter
+from lib.esri import Geodatabase
+from arcpy import Parameter, AddMessage, Exists, Clip_analysis, Delete_management, FeatureClassToFeatureClass_conversion
+
 #arcpy toolbox
 #parameter indexes
 clip_from_db = 0
@@ -41,10 +43,6 @@ class Clip(object):
             parameterType = 'Required',
         )]
     def execute(self, parameters, messages):
-
-        from .esri import Geodatabase
-        from arcpy import AddMessage, Exists, Clip_analysis, Delete_management, FeatureClassToFeatureClass_conversion
-
         AddMessage('{}; {}; {};'.format(
             parameters[clip_from_db].valueAsText,
             parameters[clip_to_db].valueAsText,

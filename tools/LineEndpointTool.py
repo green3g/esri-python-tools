@@ -1,4 +1,6 @@
-from arcpy import Parameter
+from arcpy import Parameter, CreateFeatureclass_management, Describe, AddMessage
+from os.path import split as Split_Path
+from lib.esri.Geometry import line_to_endpoints
 
 #paramter indexes
 _input_fc = 0
@@ -52,10 +54,6 @@ class LineEndPoints(object):
         self.process(input_fc, output_fc, use_template)
 
     def process(self, input_fc, output_fc, use_template='false'):
-        
-        from arcpy import CreateFeatureclass_management, Describe, AddMessage
-        from os.path import split as Split_Path
-        from .esri.Geometry import line_to_endpoints
 
         template = None
         if use_template == 'true':

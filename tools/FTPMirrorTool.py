@@ -4,7 +4,10 @@
 # http://stackoverflow.com/questions/5230966/python-ftp-download-all-files-in-directory
 #
 
-from arcpy import Parameter
+from arcpy import Parameter, AddMessage, AddWarning
+from os.path import join
+from lib.util.File_Operations import verify_path_exists
+from ftplib import FTP
 
 #paramter indexes
 _output_folder = 0
@@ -17,9 +20,6 @@ def retrieve_directory_recursive(ftp, output_folder, directory):
     """
     recursively retrieves files from an ftp directory
     """
-    from os.path import join
-    from util.File_Operations import verify_path_exists
-    from arcpy import AddMessage, AddWarning
 
     verify_path_exists(output_folder)
     AddMessage('Navigating to {}'.format(directory))
@@ -115,9 +115,6 @@ class FTPMirror(object):
             ftp_password - The usernames password to connect to the ftp server. The default is None
             AddMessage - A logging function. The default is print
         """
-
-        from ftplib import FTP
-        from arcpy import AddMessage
 
         ftp = FTP(ftp_server)
 

@@ -1,4 +1,18 @@
 from arcpy import Parameter
+from arcpy.da import SearchCursor
+from arcpy import AddMessage, CreateFileGDB_management, FeatureClassToFeatureClass_conversion, SelectLayerByAttribute_management
+import csv
+import os
+import time
+from subprocess import Popen
+from lib.esri import Extent, MapDocument
+from lib.util import String, File_Operations
+
+try:
+    from arcpy.mapping import MapDocument, ListDataFrames, PDFDocumentCreate
+
+except ImportErrot as e:
+    AddError('This script requires ArcMap: {}'.format(e))
 
 ###
 # Esri Toolbox
@@ -97,15 +111,6 @@ class SiteMapGenerator(object):
     def execute(self, parameters, messages):
         """generates the site map pdf and csv files"""
 
-        from arcpy.da import SearchCursor
-        from arcpy import AddMessage, CreateFileGDB_management, FeatureClassToFeatureClass_conversion, SelectLayerByAttribute_management, mapping
-        import csv
-        import os
-        import time
-        from subprocess import Popen
-        from .esri import Extent, MapDocument
-        from .util import String, File_Operations
-
         # set up local vars for easy access
         layer = parameters[p_layer].valueAsText
         export_location = parameters[p_export_location].valueAsText
@@ -113,8 +118,8 @@ class SiteMapGenerator(object):
         title_field = parameters[p_title_field].valueAsText
         individual = parameters[p_individual].valueAsText
         document_title = parameters[p_title].valueAsText
-        current_document = mapping.MapDocument("CURRENT")
-        data_frame = mapping.ListDataFrames(current_document)[0]
+        current_document = MapDocument("CURRENT")
+        data_frame = ListDataFrames(current_document)[0]
 
         AddMessage("""layer={}; export_location={}; buffer_dist={};
                 title_field={}; individual={}; document_title={};""".format(
@@ -171,7 +176,7 @@ class SiteMapGenerator(object):
                                              symbols['red'], 'Selected Features')
 
         # prep output pdf
-        final_pdf = mapping.PDFDocumentCreate(os.path.join(
+        final_pdf = PDFDocumentCreate(os.path.join(
             export_location, '{}_Final.pdf'.format(file_name)))
         AddMessage('exporting pdf file {}_Final.pdf to {}'.format(
             file_name, export_location))

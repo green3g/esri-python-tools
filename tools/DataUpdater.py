@@ -7,7 +7,12 @@
 # Created:     17/03/2016
 # Copyright:   (c) groemhildt 2016
 #-------------------------------------------------------------------------------
-from arcpy import Parameter
+from arcpy import Parameter, AddError
+from arcpy.da import UpdateCursor
+try:
+    from arcpy.mp import ArcGISProject
+except ImportError as e:
+    AddError('This script requires ArcGIS Pro: {}'.format(e))
 
 
 def update_layer(layer, field, value, new_value):
@@ -31,7 +36,6 @@ def update_layer(layer, field, value, new_value):
     return 'Layer Updated: {}'.format(layer)
 
 def get_layer_names(map='Map'):
-    from arcpy.mp import ArcGISProject
     doc = ArcGISProject('current')
     m = doc.listMaps(map)[0]
 
@@ -82,7 +86,6 @@ class MultipleLayerUpdater(object):
         )]
 
     def execute(self, parameters, messages):
-        from arcpy.da import UpdateCursor
         layers= get_layer_names(parameters[0].valueAsText)
         for layer in layers:
             messages.addMessage(
