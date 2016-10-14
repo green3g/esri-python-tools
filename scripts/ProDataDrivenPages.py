@@ -1,3 +1,13 @@
+# -*- coding: utf-8 -*-
+# A set of data driven pages like utilities for arcgis pro
+#
+# Usage:
+#   import sys
+#   sys.path.append('C:/path/to/Python_Tools')
+#   from scripts.ProDataDrivenPages import export_layer_maps, FeatureExtentIter, MapLayoutHelper
+#   help(export_layer_maps)
+#   ...
+
 from lib.esri.Extent import expand
 from lib.util.String import get_safe_string
 
