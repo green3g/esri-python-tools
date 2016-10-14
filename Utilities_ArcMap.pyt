@@ -20,7 +20,6 @@ class Toolbox(object):
           Clip,
           Reproject,
           SiteMapGenerator,
-          MultipleLayerUpdater,
           PolygonCentroidToPoint,
           LineEndPoints,
           PointElevations,
