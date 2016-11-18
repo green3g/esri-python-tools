@@ -2,7 +2,6 @@
 from os.path import split, join, isfile, exists
 from os import makedirs
 import errno
-from PyPDF2 import PdfFileWriter, PdfFileReader
 from shutil import copyfile
 from arcpy.da import SearchCursor
 
@@ -13,6 +12,11 @@ def verify_path_exists(path):
         if exception.errno != errno.EEXIST:
             raise
 
+try:
+    from PyPDF2 import PdfFileWriter, PdfFileReader
+except ImportError as e:
+    print('WARNING: PyPDF2 is not available, and is used to extract pdf pages: {}'.format(e))
+    
 def get_page_filename(filename, page):
     """
     formats a filename

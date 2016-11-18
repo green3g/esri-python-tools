@@ -14,8 +14,8 @@ from tools.FTPMirrorTool import FTPMirror
 
 class Toolbox(object):
     def __init__(self):
-        self.label = 'ArcMap Utilities'
-        self.alias = 'ArcMap Utilities'
+        self.label = 'ArcMapUtilities'
+        self.alias = 'ArcMapUtilities'
         self.tools = [
           Clip,
           Reproject,
