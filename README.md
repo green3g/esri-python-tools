@@ -40,11 +40,40 @@ Reprojects an entire geodatabase using a specified projection file. Layers not i
 
 ## Scripts
 
+### Update MXD Metadata
+`scripts/UpdateMXDMetadata.py`
+
+**Description:**
+Iterates through an mxd's layers and extracts data source metadata. Layer descriptions
+are updated to the latest abstract, purpose, and credits.
+
+Each metadata category is separated into a separate html paragraph using `<p></p>` tags.
+
+**Purpose:**
+Useful to update metadata on an arcgis server rest endpoint, because html
+paragraphs are formatted on the rest endpoint and in JSON responses.
+
+**Usage:**
+
+Run the script inside an arcmap python console that you want to update. 
+
+### Label Related Records
+`scripts/LabelRelatedRecords.py`
+
+**Description:**
+Looks up related records and generates a label with selected
+field in a list-like format.
+
+**Usage:**
+See documented script
+
 ### Calculate Dynamic Expression Related Records
+
+**Description:**
 Calculates the dynamic expression for a layer and can be used to dynamically
 display related records text for data driven pages or feature labels
 
-#### Usage (see script for detail)
+**Usage (see script for detail)**
  - Change the FindLabel parameter to the id field of the main table
  - This id should be related to each of the related tables
  - Also change the first line of FindLabel. Set parameter equal to the FindLabel parameter
