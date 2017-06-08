@@ -52,6 +52,9 @@ class Clip(object):
         projection = parameters[clip_projection].valueAsText
         clip_layer = parameters[clip_clip_layer].valueAsText
 
+        self.clip(from_db, to_db, projection, clip_layer)
+
+    def clip(self, from_db, to_db, projection, clip_layer):
         #run the functions
         Geodatabase.clean(to_db)
 

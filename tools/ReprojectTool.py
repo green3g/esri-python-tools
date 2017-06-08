@@ -1,6 +1,6 @@
 from arcpy import Parameter
 from lib.esri import Geodatabase
-from arcpy import AddMessage, Exists, FeatureClassToFeatureClass_conversion
+from arcpy import AddMessage, AddWarning, Exists, FeatureClassToFeatureClass_conversion, ExecuteError
 
 #arcpy toolbox
 #parameter indexes
@@ -45,6 +45,9 @@ class Reproject(object):
         to_db = parameters[reproject_to_db].valueAsText
         projection = parameters[reproject_projection].valueAsText
 
+        self.reproject(from_db, to_db, projection)
+
+    def reproject(from_db, to_db, projection):
         #run the functions
         Geodatabase.clean(to_db)
         if not Exists(projection):
@@ -61,6 +64,7 @@ class Reproject(object):
                 return
             FeatureClassToFeatureClass_conversion(from_feature_path, to_dataset_path, feature_class)
 
+                
         #call the create datasets function passing the foreach layer function to it
         Geodatabase.process_datasets(from_db,
             to_db,
