@@ -13,10 +13,16 @@ def copy_tables(input_ws, output_ws, foreach_table = None):
     env.workspace = input_ws
     feature_tables = arcpy.ListTables()
     for table in feature_tables:
+        to_table = table.replace('.', '_')
         if(foreach_table):
             foreach_table(input_ws, output_ws, table)
         else:
-            arcpy.TableToTable_conversion('{}/{}'.format(input_ws, table), output_ws, table)
+            AddMessage('Processing table: {}/{} to {}/{}'.format(input_ws, table, output_ws, to_table))
+            try:
+                TableToTable_conversion('{}/{}'.format(input_ws, table), output_ws, to_table)
+            except Exception as e:
+                AddWarning('Error on table: {}/{}'.format(input_ws, table))
+                pass
 
 def process_feature_classes(input_ws, output_ws, foreach_layer = None):
     """

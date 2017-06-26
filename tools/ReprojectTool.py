@@ -56,15 +56,16 @@ class Reproject(object):
 
         def foreach_layer(from_dataset_path, to_dataset_path, feature_class):
             from_feature_path = '{}/{}'.format(from_dataset_path, feature_class)
-            to_feature_path = '{}/{}'.format(to_dataset_path, feature_class)
-            AddMessage('Reprojecting Featureclass: {}'.format(from_feature_path))
+            to_feature_path = '{}/{}'.format(to_dataset_path, to_feature_class)
+            AddMessage('Reprojecting Featureclass: {} to {}'.format(from_feature_path, to_feature_path))
 
             if Exists(to_feature_path):
                 AddMessage('Skipping feature class {} because it already exists'.format(to_feature_path))
                 return
-            FeatureClassToFeatureClass_conversion(from_feature_path, to_dataset_path, feature_class)
-
-                
+            try:
+                FeatureClassToFeatureClass_conversion(from_feature_path, to_dataset_path, to_feature_class)
+            except ExecuteError as e:
+                AddWarning('Failed to process {}, {}'.format(feature_class, e))
         #call the create datasets function passing the foreach layer function to it
         Geodatabase.process_datasets(from_db,
             to_db,
