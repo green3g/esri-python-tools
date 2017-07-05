@@ -1,5 +1,5 @@
 from lib.esri import Geodatabase
-from arcpy import Parameter, AddMessage, Exists, Clip_analysis, Delete_management, FeatureClassToFeatureClass_conversion
+from arcpy import Parameter, AddMessage, Exists, Clip_analysis, Delete_management, FeatureClassToFeatureClass_conversion, env
 
 #arcpy toolbox
 #parameter indexes
@@ -55,27 +55,15 @@ class Clip(object):
         self.clip(from_db, to_db, projection, clip_layer)
 
     def clip(self, from_db, to_db, projection, clip_layer):
-        #run the functions
-        Geodatabase.clean(to_db)
 
         if not Exists(projection):
             AddMessage('Projection file {} does not exist'.format(projection))
             return
         def foreach_layer(from_dataset_path, to_dataset_path, feature_class):
             from_feature_path = '{}/{}'.format(from_dataset_path, feature_class)
-            to_feature_path = '{}/{}'.format(to_dataset_path, feature_class)
-            AddMessage('Copying Featureclass: {}'.format(from_feature_path))
+            to_feature_path = '{}/{}'.format(to_dataset_path, feature_class.split('.')[-1:][0])
 
-            if Exists(to_feature_path):
-                AddMessage('Skipping feature class {} because it already exists'.format(to_feature_path))
-                return
-
-            AddMessage('Clipping Featureclass: {}'.format(from_feature_path))
-            Clip_analysis('{}/{}'.format(from_dataset_path, feature_class),
-                clip_layer, 'in_memory/{}'.format(feature_class))
-            FeatureClassToFeatureClass_conversion(
-                'in_memory/{}'.format(feature_class), to_dataset_path, feature_class)
-            Delete_management('in_memory/{}'.format(feature_class))
+            Clip_analysis('{}/{}'.format(from_dataset_path, feature_class), clip_layer, to_feature_path)
 
         Geodatabase.process_datasets(from_db,
             to_db,

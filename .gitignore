@@ -3,3 +3,9 @@
 custom/
 *.xml
 *.orig
+/.vs/Python/v15
+/Python.pyproj
+.vs/
+Python.sln
+*.pyproj
+*.sln

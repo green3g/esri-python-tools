@@ -6,6 +6,10 @@ from shutil import copyfile
 from arcpy.da import SearchCursor
 
 def verify_path_exists(path):
+    """
+    verifies that the path exists and if not 
+    creates it
+    """
     try:
         makedirs(path)
     except OSError as exception:
@@ -16,7 +20,26 @@ try:
     from PyPDF2 import PdfFileWriter, PdfFileReader
 except ImportError as e:
     print('WARNING: PyPDF2 is not available, and is used to extract pdf pages: {}'.format(e))
-    
+
+def clean_folder(folder):
+    """
+    tries to remove all files in a folder recursively
+    """
+    import os, shutil
+
+    for the_file in os.listdir(folder):
+
+        # skip log files
+        if '.log' in the_file:
+            continue
+        file_path = os.path.join(folder, the_file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path): shutil.rmtree(file_path)
+        except Exception as e:
+            print(e)
+
 def get_page_filename(filename, page):
     """
     formats a filename

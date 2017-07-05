@@ -1,7 +1,5 @@
 #Geodatabase tools
 
-import arcpy
-from arcpy import env
 
 def copy_tables(input_ws, output_ws, foreach_table = None):
     """
@@ -10,19 +8,19 @@ def copy_tables(input_ws, output_ws, foreach_table = None):
         output_ws - the output database
         foreach_table - the optional function to process each table
     """
+    from arcpy import env, ListTables, AddMessage, AddWarning, TableToGeodatabase_conversion
     env.workspace = input_ws
-    feature_tables = arcpy.ListTables()
+    feature_tables = ListTables()
     for table in feature_tables:
-        to_table = table.replace('.', '_')
-        if(foreach_table):
-            foreach_table(input_ws, output_ws, table)
-        else:
-            AddMessage('Processing table: {}/{} to {}/{}'.format(input_ws, table, output_ws, to_table))
-            try:
-                TableToTable_conversion('{}/{}'.format(input_ws, table), output_ws, to_table)
-            except Exception as e:
-                AddWarning('Error on table: {}/{}'.format(input_ws, table))
-                pass
+        AddMessage('Processing table: {}'.format(table))
+        try:
+            if(foreach_table):
+                foreach_table(input_ws, output_ws, table)
+            else:
+                    TableToGeodatabase_conversion(table, output_ws)
+        except Exception as e:
+            AddWarning('Error on table: {} - {}'.format(table, e))
+            pass
 
 def process_feature_classes(input_ws, output_ws, foreach_layer = None):
     """
@@ -31,16 +29,24 @@ def process_feature_classes(input_ws, output_ws, foreach_layer = None):
     output_ws - the output for the feature classes
     foreach_layer - the function to process the feature classes
     """
+    from arcpy import env, ListFeatureClasses, FeatureClassToGeodatabase_conversion, AddWarning, AddMessage
     env.workspace = input_ws
-    feature_classes = arcpy.ListFeatureClasses()
-    if foreach_layer:
-        #copy each feature class over
-        for feature_class in feature_classes:
-            foreach_layer(input_ws, output_ws, feature_class)
+    feature_classes = ListFeatureClasses()
+    for feature_class in feature_classes:
+        
+        AddMessage('Processing {}...'.format(feature_class))
+        try:
+            if foreach_layer:
+                foreach_layer(input_ws, output_ws, feature_class)
+            else:
+                #copy each feature class over
+                FeatureClassToGeodatabase_conversion(feature_class, output_ws)
+        except Exception as e:
+            AddWarning('Error processing feature class {} - {}'.format(feature_class, e))
+
 
 def process_datasets(from_db,
         to_db = None,
-        projection = None,
         foreach_layer = None,
         foreach_table = None,
         foreach_dataset = None):
@@ -54,63 +60,36 @@ def process_datasets(from_db,
     foreach_table - the function to process each table with
     """
     #get the datasets in the input workspace
-    arcpy.AddMessage('Workspace: {}'.format(env.workspace))
+    from arcpy import AddMessage, AddWarning, CreateFeatureDataset_management, ListDatasets, Exists, env, ExecuteError
+    AddMessage('Workspace: {}'.format(env.workspace))
 
     #handle feature classes at the top level. these are moved into _top dataset for
     #automatic projection handling
-    arcpy.CreateFeatureDataset_management(to_db, '_top', projection)
-    to_dataset_path = '{}/_top'.format(to_db)
     copy_tables(from_db, to_db, foreach_table)
 
-    process_feature_classes(from_db, to_dataset_path, foreach_layer)
+    process_feature_classes(from_db, to_db, foreach_layer)
 
-    in_datsets = arcpy.ListDatasets()
+    in_datsets = ListDatasets()
     if len(in_datsets):
         for dataset in in_datsets:
+            to_dataset = dataset.split('.')[-1:][0]
             from_dataset_path = '{}/{}'.format(from_db, dataset)
-            to_dataset_path = '{}/{}'.format(to_db, dataset)
-            arcpy.AddMessage('Processing Dataset: {}'.format(from_dataset_path))
-            if foreach_dataset:
-                foreach_dataset(from_db, to_db, dataset)
-            else:
-                #skip existing datasets
-                if arcpy.Exists(to_dataset_path):
-                    arcpy.AddMessage('Skipping dataset {} because it already exists'.format(to_dataset_path))
-                    continue
-                #create the new dataset with the defined projection
-                arcpy.CreateFeatureDataset_management(to_db, dataset, projection)
+            to_dataset_path = '{}/{}'.format(to_db, to_dataset)
+            AddMessage('Processing Dataset: {}'.format(from_dataset_path))
+            try:
+                if foreach_dataset:
+                    foreach_dataset(from_db, to_db, dataset)
+                else:
+                    CreateFeatureDataset_management(to_db, to_dataset, env.outputCoordinateSystem)
+            except ExecuteError as e:
+                AddWarning('Could not create dataset {}, {}'.format(to_dataset, e))
+
             process_feature_classes(from_dataset_path, to_dataset_path, foreach_layer)
 
-def clean(to_db):
-    """
-    removes all datasets and layers from the to_db
-    to_db - the database to remove datasets and layers from
-    """
-    if not arcpy.Exists(to_db):
-        return
-    env.workspace = to_db
 
-    tables = arcpy.ListTables()
-    for table in tables:
-        arcpy.AddMessage('Removing {}/{}'.format(env.workspace, table))
-        arcpy.Delete_management('{}/{}'.format(env.workspace, table))
-
-    feature_classes = arcpy.ListFeatureClasses()
-    #delete each feature class
-    for feature_class in feature_classes:
-        arcpy.AddMessage('Removing {}/{}'.format(env.workspace, feature_class))
-        arcpy.Delete_management('{}/{}'.format(env.workspace, feature_class))
-    datasets = arcpy.ListDatasets()
-    if len(datasets):
-        def remove(input_ws, output_ws, feature_class):
-            arcpy.AddMessage('Removing {}/{}'.format(output_ws, feature_class))
-            arcpy.Delete_management('{}/{}'.format(output_ws, feature_class))
-        for dataset in datasets:
-            path = '{}/{}'.format(to_db, dataset)
-
-            #process each feature class
-            process_feature_classes(path, path, remove)
-
-            #delete the dataset
-            arcpy.AddMessage('Removing {}'.format(env.workspace))
-            arcpy.Delete_management(env.workspace)
+def check_exists(output, name):
+    from arcpy import Exists, CreateFileGDB_management, AddMessage
+    from os.path import join
+    if not Exists(join(output, name)):
+        AddMessage('GDB does not exist, creating...')
+        CreateFileGDB_management(output, name)

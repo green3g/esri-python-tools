@@ -16,41 +16,41 @@ _ftp_server = 2
 _ftp_username = 3
 _ftp_password = 4
 
-def retrieve_directory_recursive(ftp, output_folder, directory):
+def is_file(ftp, filename):
+    try: 
+        ftp.cwd(filename)
+    except Exception as e:
+        return True 
+    return False
+
+def retrieve_directory_recursive(ftp, output_folder, directory, pattern=None):
     """
     recursively retrieves files from an ftp directory
     """
 
     verify_path_exists(output_folder)
     AddMessage('Navigating to {}'.format(directory))
-    filenames = None
-    try:
-        ftp.cwd(directory)
-        ftp.retrlines('LIST')
-        AddMessage('Accessing files')
+
+    if is_file(ftp, directory):
+        AddMessage('Processing file: {}'.format(directory))
+        local_filename = join(output_folder, directory)
+
+        if pattern is not None and pattern not in directory:
+            return
+        try:
+            f = open(local_filename, 'wb')
+            ftp.retrbinary('RETR '+ directory, f.write)
+            f.close()
+        except Exception as e:
+            AddWarning('Could not access file {}'.format(directory))
+    else:
+        output_folder = join(output_folder, directory)
         filenames = ftp.nlst() # get filenames within the directory
-    except Exception as inst:
-        AddWarning('Could not access the directory: {}'.format(directory))
-        return
 
-    AddMessage(filenames)
-    dirs = []
-    for filename in filenames:
-        AddMessage('Processing file: {}'.format(filename))
-        local_filename = join(output_folder, filename)
-
-        #if its a directory
-        if len(filename.split('.')) == 1:
-            dirs.append(join(directory, filename))
-        else:
-            file = open(local_filename, 'wb')
-            ftp.retrbinary('RETR '+ filename, file.write)
-
-            file.close()
-    #navigate sub directories
-    for d in dirs:
-        folder = join(output_folder, d)
-        retrieve_directory_recursive(ftp, folder, d)
+         #navigate sub directories
+        for d in filenames:
+            retrieve_directory_recursive(ftp, output_folder, d)
+        
 
 class FTPMirror(object):
     def __init__(self):
@@ -103,9 +103,9 @@ class FTPMirror(object):
         ftp_server = params[_ftp_server].valueAsText
         ftp_username = params[_ftp_username].valueAsText
         ftp_password = params[_ftp_password].valueAsText
-        self.process(output_folder, ftp_folder, ftp_server, ftp_username, ftp_password)
+        self.mirror(output_folder, ftp_folder, ftp_server, ftp_username, ftp_password)
 
-    def process(self, output_folder, ftp_folder, ftp_server, ftp_username=None, ftp_password=None):
+    def mirror(self, output_folder, ftp_folder, ftp_server, ftp_username=None, ftp_password=None, pattern=None):
         """
         connects to an ftp server and downloads a directory
             output_folder - The local path to the download directory
@@ -120,6 +120,6 @@ class FTPMirror(object):
 
         AddMessage('Logging in.')
         ftp.login(ftp_username, ftp_password)
-        retrieve_directory_recursive(ftp, output_folder, ftp_folder)
+        retrieve_directory_recursive(ftp, output_folder, ftp_folder, pattern=pattern)
 
         ftp.quit() # This is the polite way to close a connection

@@ -1,6 +1,5 @@
 from arcpy import Parameter
 from lib.esri import Geodatabase
-from arcpy import AddMessage, AddWarning, Exists, FeatureClassToFeatureClass_conversion, ExecuteError
 
 #arcpy toolbox
 #parameter indexes
@@ -37,37 +36,24 @@ class Reproject(object):
             parameterType = 'Required',
         )]
     def execute(self, parameters, messages):
-        AddMessage('{}; {}; {};'.format(
-            parameters[reproject_from_db].valueAsText,
-            parameters[reproject_to_db].valueAsText,
-            parameters[reproject_projection].valueAsText))
+
         from_db = parameters[reproject_from_db].valueAsText
         to_db = parameters[reproject_to_db].valueAsText
         projection = parameters[reproject_projection].valueAsText
 
         self.reproject(from_db, to_db, projection)
 
-    def reproject(from_db, to_db, projection):
+    def reproject(self, from_db, to_db, projection):
+
+        # just set the output coordinate system and outputs 
+        # will be projected :)
+        from arcpy import env 
+        env.outputCoordinateSystem = projection
+
         #run the functions
-        Geodatabase.clean(to_db)
         if not Exists(projection):
             AddMessage('Projection file {} does not exist'.format(projection))
             return
 
-        def foreach_layer(from_dataset_path, to_dataset_path, feature_class):
-            from_feature_path = '{}/{}'.format(from_dataset_path, feature_class)
-            to_feature_path = '{}/{}'.format(to_dataset_path, to_feature_class)
-            AddMessage('Reprojecting Featureclass: {} to {}'.format(from_feature_path, to_feature_path))
-
-            if Exists(to_feature_path):
-                AddMessage('Skipping feature class {} because it already exists'.format(to_feature_path))
-                return
-            try:
-                FeatureClassToFeatureClass_conversion(from_feature_path, to_dataset_path, to_feature_class)
-            except ExecuteError as e:
-                AddWarning('Failed to process {}, {}'.format(feature_class, e))
         #call the create datasets function passing the foreach layer function to it
-        Geodatabase.process_datasets(from_db,
-            to_db,
-            projection,
-            foreach_layer = foreach_layer)
+        Geodatabase.process_datasets(from_db, to_db)
