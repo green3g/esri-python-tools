@@ -1,5 +1,12 @@
 #Geodatabase tools
 
+def get_name(name):
+    """
+    retrieves a file gdb friendly name with no '.' dots
+
+    """
+    return name.split('.')[-1:][0]
+
 
 def delete_existing(path):
     from arcpy import Exists, Delete_management, AddMessage
@@ -24,7 +31,7 @@ def copy_tables(input_ws, output_ws, foreach_table = None):
             if(foreach_table):
                 foreach_table(input_ws, output_ws, table)
             else:
-                output_path = join(output_ws, table)
+                output_path = join(output_ws, get_name(table))
                 delete_existing(output_path)
                 TableToGeodatabase_conversion(table, output_ws)
         except Exception as e:
@@ -39,6 +46,7 @@ def process_feature_classes(input_ws, output_ws, foreach_layer = None):
     foreach_layer - the function to process the feature classes
     """
     from arcpy import env, ListFeatureClasses, FeatureClassToGeodatabase_conversion, AddWarning, AddMessage
+    from os.path import join
     env.workspace = input_ws
     feature_classes = ListFeatureClasses()
     for feature_class in feature_classes:
@@ -49,6 +57,7 @@ def process_feature_classes(input_ws, output_ws, foreach_layer = None):
                 foreach_layer(input_ws, output_ws, feature_class)
             else:
                 #copy each feature class over
+                output_path = join(output_ws, get_name(feature_class))
                 delete_existing(output_path)
                 FeatureClassToGeodatabase_conversion(feature_class, output_ws)
         except Exception as e:
@@ -81,7 +90,7 @@ def process_datasets(from_db,
     in_datsets = ListDatasets()
     if len(in_datsets):
         for dataset in in_datsets:
-            to_dataset = dataset.split('.')[-1:][0]
+            to_dataset = get_name(dataset)
             from_dataset_path = '{}/{}'.format(from_db, dataset)
             to_dataset_path = '{}/{}'.format(to_db, to_dataset)
             AddMessage('Processing Dataset: {}'.format(from_dataset_path))
