@@ -1,6 +1,12 @@
 #Geodatabase tools
 
 
+def delete_existing(path):
+    from arcpy import Exists, Delete_management, AddMessage
+    if Exists(path):
+        AddMessage('File exists and will be removed: {}'.format(path))
+        Delete_management(path)
+
 def copy_tables(input_ws, output_ws, foreach_table = None):
     """
     copies tables or sends each table to a function
@@ -9,15 +15,18 @@ def copy_tables(input_ws, output_ws, foreach_table = None):
         foreach_table - the optional function to process each table
     """
     from arcpy import env, ListTables, AddMessage, AddWarning, TableToGeodatabase_conversion
+    from os.path import join 
+
     env.workspace = input_ws
-    feature_tables = ListTables()
-    for table in feature_tables:
+    for table in ListTables():
         AddMessage('Processing table: {}'.format(table))
         try:
             if(foreach_table):
                 foreach_table(input_ws, output_ws, table)
             else:
-                    TableToGeodatabase_conversion(table, output_ws)
+                output_path = join(output_ws, table)
+                delete_existing(output_path)
+                TableToGeodatabase_conversion(table, output_ws)
         except Exception as e:
             AddWarning('Error on table: {} - {}'.format(table, e))
             pass
@@ -40,6 +49,7 @@ def process_feature_classes(input_ws, output_ws, foreach_layer = None):
                 foreach_layer(input_ws, output_ws, feature_class)
             else:
                 #copy each feature class over
+                delete_existing(output_path)
                 FeatureClassToGeodatabase_conversion(feature_class, output_ws)
         except Exception as e:
             AddWarning('Error processing feature class {} - {}'.format(feature_class, e))
@@ -55,7 +65,6 @@ def process_datasets(from_db,
     to perform additional functions on each layer and table
     from_db - the input database to pull from
     to_db - the output database to place the processed data
-    projection - the projection file to use for creating the output datasets
     foreach_layer - the function to process each layer with
     foreach_table - the function to process each table with
     """
