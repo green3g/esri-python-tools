@@ -45,9 +45,9 @@ class Reproject(object):
 
     def reproject(self, from_db, to_db, projection):
 
-        # just set the output coordinate system and outputs 
+        # just set the output coordinate system and outputs
         # will be projected :)
-        from arcpy import env 
+        from arcpy import env, Exists
         env.outputCoordinateSystem = projection
 
         #run the functions
