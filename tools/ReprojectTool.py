@@ -1,4 +1,4 @@
-from arcpy import Parameter
+from arcpy import Parameter, AddMessage
 from lib.esri import Geodatabase
 
 #arcpy toolbox
@@ -6,6 +6,7 @@ from lib.esri import Geodatabase
 reproject_from_db = 0
 reproject_to_db = 1
 reproject_projection = 2
+reproject_skip_empty = 3
 
 class Reproject(object):
     """arcpy toolbox for reprojecting an entire database"""
@@ -34,26 +35,41 @@ class Reproject(object):
             direction = 'Input',
             datatype = 'DEPrjFile',
             parameterType = 'Required',
+        ), Parameter(
+            displayName = 'Skip Empty Rows',
+            name = 'skip_empty',
+            direction = 'Input',
+            datatype = 'GPBoolean',
+            parameterType = 'Optional'
         )]
     def execute(self, parameters, messages):
 
         from_db = parameters[reproject_from_db].valueAsText
         to_db = parameters[reproject_to_db].valueAsText
         projection = parameters[reproject_projection].valueAsText
+        skip_empty = parameters[reproject_skip_empty].valueAsText
 
-        self.reproject(from_db, to_db, projection)
+        AddMessage('Tool received parameters: {}'.format(', '.join([p.valueAsText for p in parameters])))
 
-    def reproject(self, from_db, to_db, projection):
-
-        # just set the output coordinate system and outputs
-        # will be projected :)
         from arcpy import env, Exists
-        env.outputCoordinateSystem = projection
+        
+        if skip_empty == 'true':
+            env.skipEmpty = True
+        else:
+            env.skipEmpty = False
 
         #run the functions
         if not Exists(projection):
             AddMessage('Projection file {} does not exist'.format(projection))
             return
+        
+        # just set the output coordinate system and outputs
+        # will be projected :)
+        env.skipAttach = True
+        env.outputCoordinateSystem = projection
 
         #call the create datasets function passing the foreach layer function to it
-        Geodatabase.process_datasets(from_db, to_db)
+        Geodatabase.process_datasets(from_db, to_db, None, None, None)
+
+
+

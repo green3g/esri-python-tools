@@ -21,12 +21,23 @@ def copy_tables(input_ws, output_ws, foreach_table = None):
         output_ws - the output database
         foreach_table - the optional function to process each table
     """
-    from arcpy import env, ListTables, AddMessage, AddWarning, TableToGeodatabase_conversion
+    from arcpy import env, ListTables, AddMessage, AddWarning, TableToGeodatabase_conversion, GetCount_management
     from os.path import join 
 
     env.workspace = input_ws
     for table in ListTables():
         AddMessage('Processing table: {}'.format(table))
+        
+        if env.skipAttach and '_attach' in table.lower():
+            AddWarning('Skipping attachments table {}'.format(table))
+            continue
+        
+        if env.skipEmpty:
+            count = int(GetCount_management(table)[0])
+            if count == 0:
+                AddWarning('Skipping because table is empty: {} (empty)'.format(table))
+                continue
+        
         try:
             if(foreach_table):
                 foreach_table(input_ws, output_ws, table)
@@ -45,13 +56,18 @@ def process_feature_classes(input_ws, output_ws, foreach_layer = None):
     output_ws - the output for the feature classes
     foreach_layer - the function to process the feature classes
     """
-    from arcpy import env, ListFeatureClasses, FeatureClassToGeodatabase_conversion, AddWarning, AddMessage
+    from arcpy import env, ListFeatureClasses, FeatureClassToGeodatabase_conversion, AddWarning, AddMessage, GetCount_management
     from os.path import join
     env.workspace = input_ws
     feature_classes = ListFeatureClasses()
     for feature_class in feature_classes:
         
         AddMessage('Processing {}...'.format(feature_class))
+        if env.skipEmpty:
+            count = int(GetCount_management(feature_class)[0])
+            if count == 0:
+                AddWarning('Skipping because table is empty: {}'.format(feature_class))
+                continue
         try:
             if foreach_layer:
                 foreach_layer(input_ws, output_ws, feature_class)
@@ -83,10 +99,13 @@ def process_datasets(from_db,
 
     #handle feature classes at the top level. these are moved into _top dataset for
     #automatic projection handling
+    AddMessage('Processing tables...')
     copy_tables(from_db, to_db, foreach_table)
 
+    AddMessage('Processing feature classes...')
     process_feature_classes(from_db, to_db, foreach_layer)
 
+    AddMessage('Processing datasets...') 
     in_datsets = ListDatasets()
     if len(in_datsets):
         for dataset in in_datsets:
@@ -96,7 +115,7 @@ def process_datasets(from_db,
             AddMessage('Processing Dataset: {}'.format(from_dataset_path))
             try:
                 if foreach_dataset:
-                    foreach_dataset(from_db, to_db, dataset)
+                    foreach_dataset(from_db, to_db, dataset, skip_empty)
                 else:
                     CreateFeatureDataset_management(to_db, to_dataset, env.outputCoordinateSystem)
             except ExecuteError as e:
