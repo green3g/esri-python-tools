@@ -1,15 +1,24 @@
-from arcpy import Parameter, AddField_management
+from arcpy import Parameter, AddField_management, AddMessage, ListFields
 from lib.esri.Attachments import extract_attachments
 
 #parameter indexes
 _attach_table = 0
 _out_folder = 1
+_group_by_field = 2
 
 class ExtractAttachments(object):
     def __init__(self):
         self.label = 'Extract table attachments'
         self.description = 'Extract table attachments and add a file name field'
         self.canRunInBackground = True
+		
+    def initializeParameters(self):
+	self.parameters[_group_by_field].parameterDependencies = [_attach_table]
+		
+    def updateParameters(self, parameters):
+	if parameters[_attach_table]:
+	    layer = parameters[_attach_table].valueAsText
+	    parameters[_group_by_field].filter.list = [f.name for f in ListFields(layer)]
 
     def getParameterInfo(self):
         """
@@ -27,6 +36,12 @@ class ExtractAttachments(object):
             datatype=['DEFolder'],
             parameterType='Required',
             direction='Input'
+        ), Parameter(
+            displayName='Group By Field (place images in subfolders)',
+            name='group_by_field',
+            datatype='GPString',
+            parameterType='Optional',
+            direction='Input'
         )]
         return params
 
@@ -37,17 +52,8 @@ class ExtractAttachments(object):
 
         attach_table = params[_attach_table].valueAsText
         out_folder = params[_out_folder].valueAsText
-        self.process(attach_table, out_folder)
+	group_by_field = params[_group_by_field].valueAsText
 
-    def process(self, attach_table, out_folder):
-        """
-        creates a new field on the attachments table and uses
-        extract attachments function to move the attachments to
-        the output path.
-        """
+	# run the task
+        extract_attachments(attach_table, out_folder, group_by_field)
 
-        # add a file name field
-        AddField_management(attach_table, 'file_name', "TEXT", field_length=50)
-
-        # run the task
-        extract_attachments(attach_table, out_folder)
