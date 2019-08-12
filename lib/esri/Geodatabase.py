@@ -83,11 +83,10 @@ def process_feature_classes(input_ws, output_ws, foreach_layer = None):
             AddWarning('Error processing feature class {} - {}'.format(feature_class, e))
 
 
-def process_datasets(from_db,
-        to_db = None,
-        foreach_layer = None,
-        foreach_table = None,
-        foreach_dataset = None):
+def process_datasets(from_db, to_db=None,
+                     foreach_layer=None,
+                     foreach_table=None,
+                     foreach_dataset=None):
     """
     creates the projected datasets necessary and then calls the function
     to perform additional functions on each layer and table
