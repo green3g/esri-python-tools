@@ -21,7 +21,9 @@ def copy_tables(input_ws, output_ws, foreach_table = None):
         output_ws - the output database
         foreach_table - the optional function to process each table
     """
-    from arcpy import env, ListTables, AddMessage, AddWarning, TableToGeodatabase_conversion, GetCount_management
+    from arcpy import env, ListTables, AddMessage, AddWarning, \
+        TableToGeodatabase_conversion, GetCount_management, \
+        TableToTable_conversion
     from os.path import join 
 
     env.workspace = input_ws
@@ -39,12 +41,12 @@ def copy_tables(input_ws, output_ws, foreach_table = None):
                 continue
         
         try:
-            if(foreach_table):
+            if foreach_table:
                 foreach_table(input_ws, output_ws, table)
             else:
                 output_path = join(output_ws, get_name(table))
                 delete_existing(output_path)
-                TableToGeodatabase_conversion(table, output_ws)
+                TableToTable_conversion(table, output_ws, get_name(table))
         except Exception as e:
             AddWarning('Error on table: {} - {}'.format(table, e))
             pass
@@ -56,7 +58,8 @@ def process_feature_classes(input_ws, output_ws, foreach_layer = None):
     output_ws - the output for the feature classes
     foreach_layer - the function to process the feature classes
     """
-    from arcpy import env, ListFeatureClasses, FeatureClassToGeodatabase_conversion, AddWarning, AddMessage, GetCount_management
+    from arcpy import env, ListFeatureClasses, FeatureClassToGeodatabase_conversion, \
+        AddWarning, AddMessage, GetCount_management, FeatureClassToFeatureClass_conversion
     from os.path import join
     env.workspace = input_ws
     feature_classes = ListFeatureClasses()
@@ -75,7 +78,7 @@ def process_feature_classes(input_ws, output_ws, foreach_layer = None):
                 #copy each feature class over
                 output_path = join(output_ws, get_name(feature_class))
                 delete_existing(output_path)
-                FeatureClassToGeodatabase_conversion(feature_class, output_ws)
+                FeatureClassToFeatureClass_conversion(feature_class, output_ws, get_name(feature_class))
         except Exception as e:
             AddWarning('Error processing feature class {} - {}'.format(feature_class, e))
 
