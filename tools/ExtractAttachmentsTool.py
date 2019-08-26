@@ -13,12 +13,12 @@ class ExtractAttachments(object):
         self.canRunInBackground = True
 		
     def initializeParameters(self):
-	self.parameters[_group_by_field].parameterDependencies = [_attach_table]
+	    self.parameters[_group_by_field].parameterDependencies = [_attach_table]
 		
     def updateParameters(self, parameters):
-	if parameters[_attach_table]:
-	    layer = parameters[_attach_table].valueAsText
-	    parameters[_group_by_field].filter.list = [f.name for f in ListFields(layer)]
+        if parameters[_attach_table]:
+            layer = parameters[_attach_table].valueAsText
+            parameters[_group_by_field].filter.list = [f.name for f in ListFields(layer)]
 
     def getParameterInfo(self):
         """
@@ -52,8 +52,8 @@ class ExtractAttachments(object):
 
         attach_table = params[_attach_table].valueAsText
         out_folder = params[_out_folder].valueAsText
-	group_by_field = params[_group_by_field].valueAsText
+	    group_by_field = params[_group_by_field].valueAsText
 
-	# run the task
+	    # run the task
         extract_attachments(attach_table, out_folder, group_by_field)
 
