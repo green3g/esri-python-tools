@@ -52,8 +52,8 @@ class ExtractAttachments(object):
 
         attach_table = params[_attach_table].valueAsText
         out_folder = params[_out_folder].valueAsText
-	    group_by_field = params[_group_by_field].valueAsText
+        group_by_field = params[_group_by_field].valueAsText
 
-	    # run the task
+        # run the task
         extract_attachments(attach_table, out_folder, group_by_field)
 
